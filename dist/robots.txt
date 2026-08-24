@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mbaldwinsmith.github.io/Audiology/sitemap.xml

@@ -8,7 +8,17 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'logo.png', 'logo.svg'],
+      includeAssets: [
+        'favicon.ico',
+        'favicon.png',
+        'apple-touch-icon.png',
+        'logo.png',
+        'logo.svg',
+        'og-image.png',
+        'twitter-card.png',
+        'robots.txt',
+        'sitemap.xml',
+      ],
       manifest: {
         name: 'EliteSight HomeCare Audiology Portal',
         short_name: 'EliteSight Audiology',
