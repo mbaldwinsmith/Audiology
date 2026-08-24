@@ -22,7 +22,16 @@ import {
   Settings2,
   Users,
   Eye,
+  Archive,
+  DownloadCloud,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
+import {
+  exportCareHomeReportPdf,
+  exportPatientReportPdf,
+  exportPatientInvoicePdf,
+} from '../utils/pdfGenerator';
 
 interface BatchManagerProps {
   summary: CareHomeSummary;
@@ -32,6 +41,7 @@ interface BatchManagerProps {
   onUpdatePatient: (updatedPatient: PatientRow) => void;
   onPrintSingle: () => void;
   onPrintBatch: () => void;
+  onExportBatchZip: () => void;
 }
 
 type ViewMode = 'care-home' | 'patient-report' | 'patient-invoice' | 'batch-print';
@@ -44,8 +54,10 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   onUpdatePatient,
   onPrintSingle,
   onPrintBatch,
+  onExportBatchZip,
 }) => {
   const [activeTab, setActiveTab] = useState<ViewMode>('care-home');
+  const [isDownloadingCurrent, setIsDownloadingCurrent] = useState<boolean>(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string>(
     summary.seenPatients[0]?.id || patients[0]?.id || ''
   );
@@ -316,8 +328,8 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
               </button>
             </div>
 
-            {/* Quick Actions for Current Document */}
-            <div className="flex items-center gap-2">
+            {/* Quick Actions for Current Document & Batch Export */}
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {selectedPatient?.seen && (activeTab === 'patient-report' || activeTab === 'patient-invoice') && (
                 <button
                   onClick={() => setShowEditor(!showEditor)}
@@ -328,17 +340,58 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                   }`}
                 >
                   <Settings2 className="w-3.5 h-3.5 text-brand-blue" />
-                  <span>{showEditor ? 'Hide Editor' : 'Edit Patient'}</span>
+                  <span>{showEditor ? 'Hide Editor' : 'Edit'}</span>
                 </button>
               )}
 
+              {/* Single PDF download for active view */}
+              {activeTab !== 'batch-print' && (
+                <button
+                  onClick={async () => {
+                    setIsDownloadingCurrent(true);
+                    try {
+                      if (activeTab === 'care-home') {
+                        await exportCareHomeReportPdf(summary);
+                      } else if (activeTab === 'patient-report' && selectedPatient?.seen) {
+                        await exportPatientReportPdf(selectedPatient);
+                      } else if (activeTab === 'patient-invoice' && selectedPatient?.seen) {
+                        await exportPatientInvoicePdf(selectedPatient);
+                      }
+                    } finally {
+                      setIsDownloadingCurrent(false);
+                    }
+                  }}
+                  disabled={isDownloadingCurrent || (activeTab !== 'care-home' && !selectedPatient?.seen)}
+                  className="flex items-center gap-1 text-xs bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-2.5 py-1.5 rounded-md shadow-sm transition disabled:opacity-50"
+                  title="Download this document as an individual PDF named by patient & ref"
+                >
+                  {isDownloadingCurrent ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-blue" />
+                  ) : (
+                    <FileDown className="w-3.5 h-3.5 text-brand-blue" />
+                  )}
+                  <span>{isDownloadingCurrent ? 'Generating...' : 'Download PDF'}</span>
+                </button>
+              )}
+
+              {/* Batch ZIP Export */}
+              <button
+                onClick={onExportBatchZip}
+                className="flex items-center gap-1 text-xs bg-brand-navy hover:bg-brand-navy-dark text-white font-semibold px-3 py-1.5 rounded-md shadow-sm transition"
+                title="Export all separate patient PDFs in a ZIP archive"
+              >
+                <Archive className="w-3.5 h-3.5 text-brand-soft" />
+                <span>Export ZIP</span>
+              </button>
+
+              {/* Print View */}
               <button
                 onClick={onPrintSingle}
                 className="flex items-center gap-1 text-xs bg-brand-blue hover:bg-brand-blue-hover text-white font-medium px-3 py-1.5 rounded-md shadow-sm transition"
                 title="Print Current Preview"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>Print View</span>
+                <span>Print</span>
               </button>
             </div>
           </div>

@@ -2,7 +2,8 @@ import React from 'react';
 import { PatientRow, InvoiceLineItem } from '../types/audiology';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
 import { AudiogramUploader } from './AudiogramUploader';
-import { Edit3, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Edit3, CheckCircle, AlertTriangle, FileText, Receipt, Loader2 } from 'lucide-react';
+import { exportPatientReportPdf, exportPatientInvoicePdf } from '../utils/pdfGenerator';
 
 interface PatientEditorProps {
   patient: PatientRow;
@@ -195,6 +196,33 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             onChange={(e) => handleFieldChange('recommendations', e.target.value)}
             className="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-brand-blue outline-none"
           />
+        </div>
+      </div>
+
+      {/* PDF Export Shortcuts */}
+      <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[11px] text-slate-500 italic">
+          Export individual files named with patient name &amp; ref:
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => exportPatientReportPdf(patient)}
+            className="flex items-center gap-1.5 bg-brand-soft hover:bg-brand-soft-hover text-brand-navy border border-brand-soft-dark px-3 py-1.5 rounded text-xs font-semibold transition shadow-sm"
+            title="Download this resident's Ear & Hearing Summary as PDF"
+          >
+            <FileText className="w-3.5 h-3.5 text-brand-blue" />
+            <span>Download Report PDF</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => exportPatientInvoicePdf(patient)}
+            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 px-3 py-1.5 rounded text-xs font-semibold transition shadow-sm"
+            title="Download this resident's Itemized Invoice as PDF"
+          >
+            <Receipt className="w-3.5 h-3.5 text-slate-600" />
+            <span>Download Invoice PDF</span>
+          </button>
         </div>
       </div>
     </div>

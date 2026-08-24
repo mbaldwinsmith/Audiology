@@ -9,6 +9,7 @@ import {
   FileSpreadsheet,
   Layers,
   Sparkles,
+  Archive,
 } from 'lucide-react';
 import { generateCsvTemplate } from '../utils/csvParser';
 
@@ -17,6 +18,7 @@ interface NavbarProps {
   onLoadSampleData: () => void;
   onResetSession: () => void;
   onPrint: () => void;
+  onExportBatchZip: () => void;
   hasData: boolean;
   totalPatientsCount: number;
 }
@@ -26,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLoadSampleData,
   onResetSession,
   onPrint,
+  onExportBatchZip,
   hasData,
   totalPatientsCount,
 }) => {
@@ -145,12 +148,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {/* Batch PDF ZIP Export */}
+            {hasData && (
+              <button
+                onClick={onExportBatchZip}
+                className="flex items-center gap-1.5 text-xs bg-brand-navy-light hover:bg-slate-700 text-brand-soft border border-brand-blue/50 font-semibold px-3.5 py-1.5 rounded-md shadow-sm transition"
+                title="Export all individual PDFs named after patients and reference numbers in a ZIP archive"
+              >
+                <Archive className="w-3.5 h-3.5 text-brand-soft" />
+                <span className="hidden sm:inline">Export ZIP</span>
+              </button>
+            )}
+
             {/* Print Trigger */}
             {hasData && (
               <button
                 onClick={onPrint}
-                className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-1.5 rounded-md shadow-sm transition"
-                title="Print or Save as PDF"
+                className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3.5 py-1.5 rounded-md shadow-sm transition"
+                title="Print or Save as single multi-page PDF"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print All ({totalPatientsCount})</span>

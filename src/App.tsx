@@ -3,9 +3,11 @@ import { Navbar } from './components/Navbar';
 import { EmptyState } from './components/EmptyState';
 import { BatchManager } from './components/BatchManager';
 import { BatchPrintContainer } from './components/print/BatchPrintContainer';
+import { BatchExportModal, BatchExportProgressState } from './components/BatchExportModal';
 import { CareHomeSummary, PatientRow, ValidationError } from './types/audiology';
 import { parseAudiologyCsv } from './utils/csvParser';
 import { SAMPLE_CSV_DATA } from './utils/sampleData';
+import { exportBatchZipArchive } from './utils/pdfGenerator';
 
 export function App() {
   const [summary, setSummary] = useState<CareHomeSummary | null>(null);
@@ -13,6 +15,15 @@ export function App() {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [warnings, setWarnings] = useState<ValidationError[]>([]);
   const [isPrintAllMode, setIsPrintAllMode] = useState<boolean>(false);
+  const [batchProgress, setBatchProgress] = useState<BatchExportProgressState>({
+    isOpen: false,
+    isCompleted: false,
+    percent: 0,
+    current: 0,
+    total: 0,
+    status: '',
+    itemTitle: '',
+  });
 
   const handleProcessCsvString = useCallback(async (csvText: string) => {
     const result = await parseAudiologyCsv(csvText);
@@ -95,6 +106,44 @@ export function App() {
     }, 100);
   }, []);
 
+  const handleExportBatchZip = useCallback(async () => {
+    if (!summary || patients.length === 0) return;
+
+    const seenCount = patients.filter((p) => p.seen).length;
+    const totalDocs = 1 + seenCount * 2;
+
+    setBatchProgress({
+      isOpen: true,
+      isCompleted: false,
+      percent: 0,
+      current: 0,
+      total: totalDocs,
+      status: 'Preparing PDF generator...',
+      itemTitle: 'Care Home Batch Export',
+    });
+
+    try {
+      await exportBatchZipArchive(summary, patients, (progress) => {
+        setBatchProgress((prev) => ({
+          ...prev,
+          ...progress,
+          isOpen: true,
+        }));
+      });
+
+      setBatchProgress((prev) => ({
+        ...prev,
+        isCompleted: true,
+        percent: 100,
+        status: 'All individual PDFs successfully bundled into ZIP!',
+      }));
+    } catch (error) {
+      console.error('Batch export failed:', error);
+      alert('An error occurred during batch PDF generation.');
+      setBatchProgress((prev) => ({ ...prev, isOpen: false }));
+    }
+  }, [summary, patients]);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100">
       <Navbar
@@ -102,6 +151,7 @@ export function App() {
         onLoadSampleData={handleLoadSampleData}
         onResetSession={handleResetSession}
         onPrint={handlePrintBatch}
+        onExportBatchZip={handleExportBatchZip}
         hasData={!!summary && patients.length > 0}
         totalPatientsCount={patients.length}
       />
@@ -127,6 +177,7 @@ export function App() {
                 onUpdatePatient={handleUpdatePatient}
                 onPrintSingle={handlePrintSingle}
                 onPrintBatch={handlePrintBatch}
+                onExportBatchZip={handleExportBatchZip}
               />
             </div>
           </>
@@ -137,6 +188,12 @@ export function App() {
           />
         )}
       </main>
+
+      {/* Batch ZIP Export Modal with Live Progress Tracker */}
+      <BatchExportModal
+        progress={batchProgress}
+        onClose={() => setBatchProgress((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
