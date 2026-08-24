@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="100%" height="100%">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a2569" />
+      <stop offset="100%" stop-color="#0052cc" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon Symbol: Stylized Eye & Sound wave / Hearing Care arc -->
+  <g transform="translate(10, 10)">
+    <!-- Outer Eye Outline -->
+    <path d="M5 30 C18 10, 42 10, 55 30 C42 50, 18 50, 5 30 Z" fill="none" stroke="url(#brandGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Pupil / Inner Sphere -->
+    <circle cx="30" cy="30" r="10" fill="#0a2569" />
+    <circle cx="33" cy="27" r="3.5" fill="#ffffff" />
+    
+    <!-- Sound Waves / Hearing Pulse Arc -->
+    <path d="M48 18 C56 22, 60 27, 60 30 C60 33, 56 38, 48 42" fill="none" stroke="#0052cc" stroke-width="3.5" stroke-linecap="round" />
+    <path d="M56 12 C67 18, 72 24, 72 30 C72 36, 67 42, 56 48" fill="none" stroke="#0052cc" stroke-width="2.5" stroke-linecap="round" opacity="0.7" />
+  </g>
+
+  <!-- Typography -->
+  <text x="95" y="38" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="25" font-weight="800" fill="#0a2569" letter-spacing="-0.5">
+    EliteSight
+  </text>
+  <text x="217" y="38" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="25" font-weight="400" fill="#0052cc">
+    HomeCare
+  </text>
+  <text x="96" y="55" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#64748b" letter-spacing="1.5">
+    OPTICIANS &amp; AUDIOLOGY
+  </text>
+</svg>
