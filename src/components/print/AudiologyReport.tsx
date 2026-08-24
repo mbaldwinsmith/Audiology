@@ -15,7 +15,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           {/* Header */}
           <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3 mb-4">
             <div className="flex items-center gap-3">
-              <img src="./logo.svg" alt="EliteSight HomeCare" className="h-11 w-auto object-contain" />
+              <img src="./logo.png" alt="EliteSight HomeCare" className="h-11 w-11 object-contain" />
               <div>
                 <h1 className="text-lg font-extrabold text-brand-navy uppercase tracking-tight">
                   Ear &amp; Hearing Care Summary
@@ -203,7 +203,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             {/* Header */}
             <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3 mb-4">
               <div className="flex items-center gap-3">
-                <img src="./logo.svg" alt="EliteSight HomeCare" className="h-10 w-auto object-contain" />
+                <img src="./logo.png" alt="EliteSight HomeCare" className="h-10 w-10 object-contain" />
                 <div>
                   <h1 className="text-base font-extrabold text-brand-navy uppercase tracking-tight">
                     Pure-Tone Audiogram Chart

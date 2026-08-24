@@ -73,8 +73,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo & Branding */}
           <div className="flex items-center gap-3">
-            <div className="bg-white p-1.5 rounded-lg shadow-sm">
-              <img src="./logo.svg" alt="EliteSight HomeCare" className="h-8 w-auto" />
+            <div className="bg-white/10 p-0.5 rounded-full ring-2 ring-white/20 shadow-sm flex items-center justify-center">
+              <img src="./logo.png" alt="EliteSight HomeCare" className="h-9 w-9 object-contain rounded-full bg-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">

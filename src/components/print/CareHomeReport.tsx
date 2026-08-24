@@ -17,7 +17,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
         {/* Document Header */}
         <div className="flex items-center justify-between border-b-2 border-brand-navy pb-4 mb-5">
           <div className="flex items-center gap-3">
-            <img src="./logo.svg" alt="EliteSight HomeCare" className="h-12 w-auto object-contain" />
+            <img src="./logo.png" alt="EliteSight HomeCare" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-xl font-bold text-brand-navy uppercase tracking-tight">Care Home Audiology Report</h1>
               <p className="text-[11px] text-slate-500 font-medium">{COMPANY_DETAILS.subtitle}</p>

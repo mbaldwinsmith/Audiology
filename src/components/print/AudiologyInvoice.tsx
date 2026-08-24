@@ -13,7 +13,7 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
         {/* Invoice Header */}
         <div className="flex items-start justify-between border-b-2 border-brand-navy pb-5 mb-6">
           <div className="flex items-center gap-3">
-            <img src="./logo.svg" alt="EliteSight HomeCare" className="h-12 w-auto object-contain" />
+            <img src="./logo.png" alt="EliteSight HomeCare" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-2xl font-black text-brand-navy uppercase tracking-tight">INVOICE</h1>
               <p className="text-[11px] text-slate-500 font-semibold">{COMPANY_DETAILS.name}</p>

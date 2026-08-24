@@ -45,8 +45,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <div className="max-w-4xl mx-auto px-4 py-12">
       {/* Hero Card */}
       <div className="text-center mb-8">
-        <div className="inline-flex p-3 bg-brand-soft rounded-2xl border border-brand-soft-dark shadow-sm mb-4">
-          <img src="./logo.svg" alt="EliteSight HomeCare" className="h-12 w-auto" />
+        <div className="inline-flex p-1.5 bg-white rounded-full border border-slate-200 shadow-md mb-4 ring-4 ring-brand-soft">
+          <img src="./logo.png" alt="EliteSight HomeCare" className="h-16 w-16 object-contain rounded-full" />
         </div>
         <h1 className="text-3xl font-extrabold text-brand-navy tracking-tight sm:text-4xl">
           Care Home Audiology Portal &amp; Batch Generator
