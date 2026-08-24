@@ -1,0 +1,54 @@
+COMMERCIAL SOFTWARE LICENSE AGREEMENT
+=====================================
+
+Copyright (c) 2026 EliteSight HomeCare Ltd (Company No. 16396660).
+All Rights Reserved.
+
+NOTICE TO USER: PLEASE READ THIS CONTRACT CAREFULLY. BY USING, DOWNLOADING, COPYING, 
+OR DISTRIBUTING ALL OR ANY PORTION OF THE SOFTWARE ("SOFTWARE"), YOU ACCEPT ALL THE 
+TERMS AND CONDITIONS OF THIS AGREEMENT.
+
+1. PROPRIETARY RIGHTS & OWNERSHIP
+---------------------------------
+The EliteSight HomeCare Audiology Portal ("Software"), including its source code, documentation, 
+branding, user interface designs, and algorithms, is the exclusive proprietary property of 
+EliteSight HomeCare Ltd ("Licensor"). The Software is protected by copyright laws and international 
+treaty provisions.
+
+2. GRANT OF LICENSE
+-------------------
+Licensor grants authorized users a non-exclusive, non-transferable, revocable license to use 
+this Software strictly for the internal operational and clinical reporting purposes of 
+EliteSight HomeCare Ltd and its authorized clinical staff.
+
+3. RESTRICTIONS
+---------------
+Except as explicitly permitted in writing by EliteSight HomeCare Ltd:
+a. You may NOT sublicense, sell, rent, lease, distribute, host, or commercially exploit this Software 
+   to or on behalf of third parties.
+b. You may NOT modify, adapt, translate, reverse engineer, decompile, or disassemble any portion 
+   of the Software or create derivative works based upon it.
+c. You may NOT remove, alter, or obscure any proprietary notices, labels, or trademarks (including 
+   the EliteSight HomeCare logo and brand elements) from the Software.
+
+4. MEDICAL & CLINICAL DATA PRIVACY (GDPR ZERO-RETENTION)
+--------------------------------------------------------
+This Software is architected with a Zero-Retention model operating exclusively in client-side 
+browser volatile memory. No patient identifiable data, clinical assessments, or billing information 
+are transmitted to, stored on, or harvested by any external cloud storage without explicit consent. 
+Users are responsible for ensuring that downloaded PDF summaries and ZIP archives are stored and 
+transferred in accordance with UK GDPR and Caldicott principles.
+
+5. DISCLAIMER OF WARRANTIES & LIMITATION OF LIABILITY
+-----------------------------------------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND 
+NON-INFRINGEMENT. IN NO EVENT SHALL ELITESIGHT HOMECARE LTD OR ITS DIRECTORS BE LIABLE FOR ANY 
+CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING 
+FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing inquiries or commercial permissions, contact:
+EliteSight HomeCare Ltd
+60B Green End Road, Cambridge, England, CB4 1RY
+Email: info@elitesighthomecare.com
+Phone: 0800 865 4488
