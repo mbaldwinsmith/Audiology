@@ -305,9 +305,9 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
  */
 export function generateCsvTemplate(): string {
   const headers = CSV_REQUIRED_COLUMNS.join(',');
-  const sampleRow1 = 'Colne View Care Home,CO9 2DY,24/08/2026,14/03/1938,Sarah Jenkins,Melanie,Dudman,Yes,,Yes,Yes,Yes,Yes,Resident reported reduced hearing and left ear fullness';
-  const sampleRow2 = 'Colne View Care Home,CO9 2DY,24/08/2026,22/11/1942,Sarah Jenkins,Arthur,Pendleton,Yes,,Yes,No,Yes,No,Mild wax accumulation left ear';
-  const sampleRow3 = 'Colne View Care Home,CO9 2DY,24/08/2026,05/09/1935,Sarah Jenkins,Dorothy,Evans,No,Resident resting in bed - family requested rescheduling,No,No,No,No,Rescheduled for next visit';
+  const sampleRow1 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,14/03/1938,Sarah Jenkins,Melanie,Dudman,Yes,,Yes,Yes,Yes,Yes,Resident reported reduced hearing and left ear fullness';
+  const sampleRow2 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,22/11/1942,Sarah Jenkins,Arthur,Pendleton,Yes,,Yes,No,Yes,No,Mild wax accumulation left ear';
+  const sampleRow3 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,05/09/1935,Sarah Jenkins,Dorothy,Evans,No,Resident resting in bed - family requested rescheduling,No,No,No,No,Rescheduled for next visit';
 
   return `${headers}\n${sampleRow1}\n${sampleRow2}\n${sampleRow3}\n`;
 }
