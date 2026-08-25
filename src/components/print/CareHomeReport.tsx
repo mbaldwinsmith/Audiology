@@ -7,8 +7,14 @@ interface CareHomeReportProps {
 }
 
 export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
-  const dischargedPatients = summary.seenPatients.filter(
-    (p) => !p.hasEarWax && !p.audiogram
+  // Patients requiring invoicing / further action (wax removal, full hearing test, or billable treatment)
+  const treatmentPatients = summary.seenPatients.filter(
+    (p) => p.hasEarWax || p.audiogram || p.totalAmount > 0
+  );
+
+  // Patients assessed where no further treatment is needed (routine check clear)
+  const noFurtherTreatmentPatients = summary.seenPatients.filter(
+    (p) => !p.hasEarWax && !p.audiogram && p.totalAmount === 0
   );
 
   return (
@@ -31,175 +37,167 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
           </div>
         </div>
 
-        {/* Top KPI Ribbon */}
+        {/* Top Clinical KPI Ribbon (Non-Financial) */}
         <div className="grid grid-cols-4 gap-3 mb-5">
           <div className="bg-brand-soft border border-brand-soft-dark rounded-md p-2.5 text-center">
             <div className="text-[10px] uppercase tracking-wider font-semibold text-brand-navy">Total Patients</div>
             <div className="text-lg font-bold text-brand-navy mt-0.5">{summary.totalPatients}</div>
           </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-2.5 text-center">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-blue-900">Treatment / Invoiced</div>
+            <div className="text-lg font-bold text-blue-700 mt-0.5">{treatmentPatients.length}</div>
+          </div>
           <div className="bg-emerald-50 border border-emerald-200 rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-800">Seen / Assessed</div>
-            <div className="text-lg font-bold text-emerald-700 mt-0.5">{summary.seenPatientsCount}</div>
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-800">No Action Needed</div>
+            <div className="text-lg font-bold text-emerald-700 mt-0.5">{noFurtherTreatmentPatients.length}</div>
           </div>
           <div className="bg-amber-50 border border-amber-200 rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">Exceptions / Unseen</div>
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">Patients Not Seen</div>
             <div className="text-lg font-bold text-amber-700 mt-0.5">{summary.unseenPatientsCount}</div>
           </div>
-          <div className="bg-brand-navy text-white rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-brand-soft">Total Visit Value</div>
-            <div className="text-lg font-bold text-white mt-0.5">£{summary.totalRevenue.toFixed(2)}</div>
-          </div>
         </div>
 
-        {/* SECTION 1: Financial & Billing Summary */}
+        {/* SECTION 1: Invoices & Further Treatment */}
         <div className="mb-5">
           <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 1: Financial &amp; Billing Summary</h2>
-            <span className="text-[10px] font-medium text-brand-soft">Terms: 7 Days from Visit</span>
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 1: Invoices &amp; Further Treatment</h2>
+            <span className="text-[10px] font-medium text-brand-soft">{treatmentPatients.length} Resident(s)</span>
           </div>
-          <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden">
-            <table className="w-full text-left border-collapse text-[11px]">
-              <thead>
-                <tr className="bg-brand-soft text-brand-navy font-semibold border-b border-slate-200">
-                  <th className="py-1.5 px-3 w-8">#</th>
-                  <th className="py-1.5 px-3">Resident Name</th>
-                  <th className="py-1.5 px-3">DOB</th>
-                  <th className="py-1.5 px-3">Invoice No</th>
-                  <th className="py-1.5 px-3">Services Conducted</th>
-                  <th className="py-1.5 px-3 text-center w-24">Status</th>
-                  <th className="py-1.5 px-3 text-right">Amount (GBP)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {summary.seenPatients.map((p, idx) => {
-                  const services: string[] = [];
-                  if (p.screening) services.push('Screening (Free)');
-                  if (p.hasEarWax) services.push('Wax Removal (£80)');
-                  if (p.audiogram) services.push('Full Hearing Test (£50)');
-                  const servicesText = services.length > 0 ? services.join(', ') : 'Otoscopy Check';
-
-                  return (
-                    <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                      <td className="py-1 px-3 text-slate-400 font-mono">{idx + 1}</td>
-                      <td className="py-1 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                      <td className="py-1 px-3 text-slate-600">{p.dob}</td>
-                      <td className="py-1 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
-                      <td className="py-1 px-3 text-slate-700">{servicesText}</td>
-                      <td className="py-1 px-3 text-center">
-                        {p.isPaid ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            ✓ Paid
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                            Due (7d)
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-1 px-3 text-right font-semibold text-slate-900">£{p.totalAmount.toFixed(2)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="bg-brand-soft/80 border-t-2 border-brand-navy font-bold text-brand-navy text-xs">
-                  <td colSpan={6} className="py-2 px-3 text-right uppercase tracking-wider">
-                    Care Home Grand Total Billed:
-                  </td>
-                  <td className="py-2 px-3 text-right text-brand-navy text-sm font-extrabold">
-                    £{summary.totalRevenue.toFixed(2)}
-                  </td>
-                </tr>
-                {(summary.totalPaidRevenue > 0 || summary.totalPendingRevenue > 0) && (
-                  <tr className="bg-slate-100 text-[10px] text-slate-600 border-t border-slate-200">
-                    <td colSpan={7} className="py-1.5 px-3 text-right">
-                      <span className="text-emerald-800 font-semibold">
-                        Collected / Paid ({summary.paidInvoicesCount}): £{summary.totalPaidRevenue.toFixed(2)}
-                      </span>
-                      <span className="mx-2 text-slate-300">|</span>
-                      <span className="text-amber-800 font-semibold">
-                        Outstanding Balance ({summary.unpaidInvoicesCount}): £{summary.totalPendingRevenue.toFixed(2)}
-                      </span>
-                    </td>
+          <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
+            {treatmentPatients.length > 0 ? (
+              <table className="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-brand-soft text-brand-navy font-semibold border-b border-slate-200">
+                    <th className="py-1.5 px-3 w-8">#</th>
+                    <th className="py-1.5 px-3">Resident Name</th>
+                    <th className="py-1.5 px-3">DOB</th>
+                    <th className="py-1.5 px-3">Invoice No</th>
+                    <th className="py-1.5 px-3">Services Conducted</th>
+                    <th className="py-1.5 px-3">Clinical Next Step / Regimen</th>
+                    <th className="py-1.5 px-3 text-center w-20">Status</th>
+                    <th className="py-1.5 px-3 text-right">Amount</th>
                   </tr>
-                )}
-              </tfoot>
-            </table>
-          </div>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {treatmentPatients.map((p, idx) => {
+                    const services: string[] = [];
+                    if (p.hasEarWax) services.push('Wax Removal (£80)');
+                    if (p.audiogram) services.push('Full Hearing Test (£50)');
+                    if (p.screening && !p.hasEarWax && !p.audiogram) services.push('Screening (Free)');
+                    const servicesText = services.length > 0 ? services.join(', ') : 'Audiological Consultation';
 
-        {/* SECTION 2: Clinical Diagnostic Breakdown */}
-        <div className="mb-5">
-          <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 2: Clinical Diagnostic Breakdown</h2>
-          </div>
-          <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white grid grid-cols-3 gap-3">
-            <div className="border border-slate-200 rounded p-2 bg-slate-50/50">
-              <div className="font-semibold text-slate-700">Screenings Conducted</div>
-              <div className="text-base font-bold text-brand-blue mt-0.5">{summary.screeningsCount}</div>
-              <p className="text-[10px] text-slate-500 mt-1">Initial otoscopy &amp; threshold evaluation</p>
-            </div>
-            <div className="border border-slate-200 rounded p-2 bg-slate-50/50">
-              <div className="font-semibold text-slate-700">Full Hearing Tests Performed</div>
-              <div className="text-base font-bold text-brand-blue mt-0.5">{summary.audiogramsCount}</div>
-              <p className="text-[10px] text-slate-500 mt-1">Pure tone diagnostic assessment</p>
-            </div>
-            <div className="border border-slate-200 rounded p-2 bg-slate-50/50">
-              <div className="font-semibold text-slate-700">Ear Wax Cases Managed</div>
-              <div className="text-base font-bold text-brand-blue mt-0.5">{summary.waxRemovalCount}</div>
-              <p className="text-[10px] text-slate-500 mt-1">Micro-suction / irrigation candidates</p>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: Exceptions & Discharges */}
-        <div>
-          <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 3: Exceptions &amp; Discharges</h2>
-          </div>
-          <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white space-y-3">
-            {/* Unseen Residents */}
-            <div>
-              <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                Unseen Residents / Reschedule Required ({summary.unseenPatients.length})
-              </div>
-              {summary.unseenPatients.length > 0 ? (
-                <table className="w-full text-left text-[11px] border border-amber-200 rounded overflow-hidden">
-                  <thead className="bg-amber-50 text-amber-900 font-semibold border-b border-amber-200">
-                    <tr>
-                      <th className="py-1 px-2.5">Resident</th>
-                      <th className="py-1 px-2.5">DOB</th>
-                      <th className="py-1 px-2.5">Reason Not Seen / Action Note</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-amber-100">
-                    {summary.unseenPatients.map((p) => (
-                      <tr key={p.id} className="bg-amber-50/30">
-                        <td className="py-1 px-2.5 font-semibold text-slate-800">{p.residentFullName}</td>
-                        <td className="py-1 px-2.5 text-slate-600">{p.dob}</td>
-                        <td className="py-1 px-2.5 text-amber-950">{p.reasonNotSeen || 'Not seen during scheduled round'}</td>
+                    return (
+                      <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                        <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
+                        <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
+                        <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                        <td className="py-1.5 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
+                        <td className="py-1.5 px-3 text-slate-700 font-medium">{servicesText}</td>
+                        <td className="py-1.5 px-3 text-slate-600">
+                          {p.nextStep || (p.hasEarWax ? '2-Week Olive Oil Regimen / Follow-up' : 'Hearing Aid Review')}
+                        </td>
+                        <td className="py-1.5 px-3 text-center">
+                          {p.isPaid ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              ✓ Paid
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                              Due (7d)
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1.5 px-3 text-right font-semibold text-slate-900">£{p.totalAmount.toFixed(2)}</td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-[10px] text-slate-500 italic">All scheduled residents were successfully assessed.</p>
-              )}
-            </div>
-
-            {/* Discharged Residents */}
-            <div>
-              <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                Discharged / Routine 12-Month Review ({dischargedPatients.length})
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-3 text-center text-slate-500 italic">
+                No billable treatments or invoices required for this visit round.
               </div>
-              <p className="text-[11px] text-slate-600">
-                {dischargedPatients.length > 0
-                  ? dischargedPatients.map((p) => p.residentFullName).join(', ')
-                  : 'None'}
-              </p>
-            </div>
+            )}
+          </div>
+        </div>
+
+        {/* SECTION 2: No Further Treatment */}
+        <div className="mb-5">
+          <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 2: No Further Treatment</h2>
+            <span className="text-[10px] font-medium text-brand-soft">{noFurtherTreatmentPatients.length} Resident(s)</span>
+          </div>
+          <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
+            {noFurtherTreatmentPatients.length > 0 ? (
+              <table className="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                    <th className="py-1.5 px-3 w-8">#</th>
+                    <th className="py-1.5 px-3">Resident Name</th>
+                    <th className="py-1.5 px-3">DOB</th>
+                    <th className="py-1.5 px-3">Assessment Finding</th>
+                    <th className="py-1.5 px-3">Clinical Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {noFurtherTreatmentPatients.map((p, idx) => (
+                    <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                      <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
+                      <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
+                      <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                      <td className="py-1.5 px-3 text-slate-600">
+                        {p.hearingTestResult || 'Routine screening clear. Normal otoscopy.'}
+                      </td>
+                      <td className="py-1.5 px-3 text-emerald-700 font-medium">
+                        ✓ Discharged / Routine 12-Month Recall
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-3 text-center text-slate-500 italic">
+                All assessed residents required clinical follow-up or treatment.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* SECTION 3: Patients Not Seen */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 3: Patients Not Seen</h2>
+            <span className="text-[10px] font-medium text-brand-soft">{summary.unseenPatients.length} Resident(s)</span>
+          </div>
+          <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
+            {summary.unseenPatients.length > 0 ? (
+              <table className="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-amber-50/70 text-amber-900 font-semibold border-b border-amber-200">
+                    <th className="py-1.5 px-3 w-8">#</th>
+                    <th className="py-1.5 px-3">Resident Name</th>
+                    <th className="py-1.5 px-3">DOB</th>
+                    <th className="py-1.5 px-3">Reason Not Seen / Action Note</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100">
+                  {summary.unseenPatients.map((p, idx) => (
+                    <tr key={p.id} className="bg-amber-50/20">
+                      <td className="py-1.5 px-3 text-amber-700/60 font-mono">{idx + 1}</td>
+                      <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
+                      <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                      <td className="py-1.5 px-3 text-amber-950 font-medium">
+                        {p.reasonNotSeen || 'Not seen during scheduled round - reschedule requested'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-3 text-center text-slate-500 italic">
+                All scheduled residents were successfully assessed.
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -216,3 +214,4 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
     </div>
   );
 };
+
