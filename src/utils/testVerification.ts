@@ -4,6 +4,12 @@ import { calculateLineItems, calculateTotalAmount } from './pricing';
 import { parseAudiologyCsv, createNewPatient, generateCleanedCsv } from './csvParser';
 import { recalculateSummary } from './sessionHelper';
 import { SAMPLE_CSV_DATA } from './sampleData';
+import {
+  encryptSessionData,
+  decryptSessionData,
+  hasEncryptedSession,
+  clearEncryptedSession,
+} from './security';
 
 export async function runSelfVerification() {
   console.log('=== ELITESIGHT AUDIOLOGY VERIFICATION RUN ===');
@@ -140,8 +146,43 @@ export async function runSelfVerification() {
   console.assert(reimportedPaid?.paymentRef === 'SUMUP-839120', 'Test 8.7 failed: Re-imported payment ref mismatch');
   console.log('✔ Phase 8 Payment Tracking & Two-Way CSV Persistence Passed');
 
+  // Test 9: Web Crypto AES-GCM 256-bit Encrypted Session Auto-Save & Recovery
+  await encryptSessionData(
+    {
+      summary: summaryWithPayment,
+      patients: testPatientsWithPayment,
+      errors: [],
+      warnings: [],
+      savedAt: Date.now(),
+    },
+    '1397'
+  );
+  console.assert(hasEncryptedSession() === true, 'Test 9.1 failed: Encrypted session should exist');
+
+  // Test successful decryption with correct PIN
+  const decryptedPayload = await decryptSessionData('1397');
+  console.assert(decryptedPayload !== null, 'Test 9.2 failed: Decryption should succeed with correct PIN');
+  console.assert(
+    decryptedPayload?.patients.length === testPatientsWithPayment.length,
+    `Test 9.3 failed: Expected ${testPatientsWithPayment.length} patients, got ${decryptedPayload?.patients.length}`
+  );
+  console.assert(
+    decryptedPayload?.summary?.totalPaidRevenue === 130,
+    'Test 9.4 failed: Decrypted summary revenue mismatch'
+  );
+
+  // Test decryption failure with incorrect PIN
+  const wrongPinPayload = await decryptSessionData('9999');
+  console.assert(wrongPinPayload === null, 'Test 9.5 failed: Decryption with wrong PIN must return null');
+
+  // Test clear encrypted session
+  clearEncryptedSession();
+  console.assert(hasEncryptedSession() === false, 'Test 9.6 failed: Storage should be cleared');
+  console.log('✔ Phase 9 Web Crypto AES-GCM Encrypted Session Auto-Save & Recovery Passed');
+
   console.log('🎉 ALL AUDIOLOGY ENGINE VERIFICATIONS PASSED SUCCESSFULLY!');
   return true;
 }
+
 
 

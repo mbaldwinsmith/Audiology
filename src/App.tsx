@@ -11,8 +11,15 @@ import { CareHomeSummary, PatientRow, ValidationError } from './types/audiology'
 import { parseAudiologyCsv, generateCleanedCsv } from './utils/csvParser';
 import { SAMPLE_CSV_DATA } from './utils/sampleData';
 import { exportBatchZipArchive, sanitizeFileName, triggerBlobDownload } from './utils/pdfGenerator';
-import { INACTIVITY_TIMEOUT_MS, initializePinStorage } from './utils/security';
+import {
+  INACTIVITY_TIMEOUT_MS,
+  initializePinStorage,
+  encryptSessionData,
+  decryptSessionData,
+  clearEncryptedSession,
+} from './utils/security';
 import { recalculateSummary } from './utils/sessionHelper';
+import { ShieldCheck, X } from 'lucide-react';
 
 export function App() {
   const [summary, setSummary] = useState<CareHomeSummary | null>(null);
@@ -24,6 +31,8 @@ export function App() {
   const [isChangePinOpen, setIsChangePinOpen] = useState<boolean>(false);
   const [isAddPatientOpen, setIsAddPatientOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [activePin, setActivePin] = useState<string | null>(null);
+  const [restoredToast, setRestoredToast] = useState<string | null>(null);
   const [batchProgress, setBatchProgress] = useState<BatchExportProgressState>({
     isOpen: false,
     isCompleted: false,
@@ -38,6 +47,22 @@ export function App() {
   useEffect(() => {
     initializePinStorage();
   }, []);
+
+  // Continuous background encrypted session auto-save
+  useEffect(() => {
+    if (activePin && summary && patients.length > 0) {
+      encryptSessionData(
+        {
+          summary,
+          patients,
+          errors,
+          warnings,
+          savedAt: Date.now(),
+        },
+        activePin
+      );
+    }
+  }, [summary, patients, errors, warnings, activePin]);
 
   // Inactivity auto-lock listener (locks after 5 minutes of no user interaction)
   useEffect(() => {
@@ -61,6 +86,26 @@ export function App() {
       events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
   }, [isLocked]);
+
+  const handleUnlock = useCallback(async (enteredPin: string) => {
+    setActivePin(enteredPin);
+    setIsLocked(false);
+
+    // If memory is empty on unlock (e.g. after refresh), attempt decryption
+    if (!summary || patients.length === 0) {
+      const recovered = await decryptSessionData(enteredPin);
+      if (recovered && recovered.patients && recovered.patients.length > 0) {
+        setSummary(recovered.summary);
+        setPatients(recovered.patients);
+        setErrors(recovered.errors || []);
+        setWarnings(recovered.warnings || []);
+        setRestoredToast(
+          `Restored active session from encrypted cache (${recovered.patients.length} resident records).`
+        );
+        setTimeout(() => setRestoredToast(null), 6000);
+      }
+    }
+  }, [summary, patients.length]);
 
   const handleProcessCsvString = useCallback(async (csvText: string) => {
     const result = await parseAudiologyCsv(csvText);
@@ -87,18 +132,22 @@ export function App() {
 
   const handleResetSession = useCallback(() => {
     if (window.confirm('Are you sure you want to flush all patient records from memory? This action cannot be undone (GDPR Zero-Retention).')) {
+      clearEncryptedSession();
       setSummary(null);
       setPatients([]);
       setErrors([]);
       setWarnings([]);
+      setRestoredToast(null);
     }
   }, []);
 
   const handleWipePatientData = useCallback(() => {
+    clearEncryptedSession();
     setSummary(null);
     setPatients([]);
     setErrors([]);
     setWarnings([]);
+    setRestoredToast(null);
   }, []);
 
   const handleUpdatePatient = useCallback((updatedPatient: PatientRow) => {
@@ -194,7 +243,7 @@ export function App() {
   }, [summary, patients]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-100 w-full overflow-x-hidden relative">
       <Navbar
         onFileUpload={handleFileUpload}
         onLoadSampleData={handleLoadSampleData}
@@ -246,6 +295,20 @@ export function App() {
         )}
       </main>
 
+      {/* Crash Recovery Toast Notification */}
+      {restoredToast && (
+        <div className="no-print fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 animate-slideUp">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span className="font-medium">{restoredToast}</span>
+          <button
+            onClick={() => setRestoredToast(null)}
+            className="ml-2 p-1 text-slate-400 hover:text-white rounded transition"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Add Walk-in Resident Modal */}
       <AddPatientModal
         isOpen={isAddPatientOpen}
@@ -270,7 +333,7 @@ export function App() {
       {/* Main Lock Screen Modal */}
       <PinLockModal
         isOpen={isLocked}
-        onUnlock={() => setIsLocked(false)}
+        onUnlock={handleUnlock}
         mode="unlock"
         onSessionWipe={handleWipePatientData}
       />

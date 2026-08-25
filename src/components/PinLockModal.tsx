@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Lock, ShieldCheck, AlertCircle, Delete, KeyRound, CheckCircle2, X } from 'lucide-react';
-import { verifyPin, updatePin, resetFailedAttempts, DEFAULT_PIN } from '../utils/security';
+import { verifyPin, updatePin, resetFailedAttempts, hasEncryptedSession, DEFAULT_PIN } from '../utils/security';
 
 interface PinLockModalProps {
   isOpen: boolean;
-  onUnlock: () => void;
+  onUnlock: (enteredPin: string) => void;
   mode?: 'unlock' | 'change-pin';
   onCloseChangePin?: () => void;
   onSessionWipe?: () => void;
@@ -22,6 +22,7 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({
   const [isShaking, setIsShaking] = useState<boolean>(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   const [isLockedOut, setIsLockedOut] = useState<boolean>(false);
+  const hasSavedSession = hasEncryptedSession();
 
   // Change PIN wizard states
   const [changeStep, setChangeStep] = useState<'current' | 'new' | 'confirm'>('current');
@@ -44,7 +45,7 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({
     if (result.success) {
       setErrorMsg('');
       setPin('');
-      onUnlock();
+      onUnlock(pinToVerify);
     } else {
       setRemainingAttempts(result.remainingAttempts);
       if (result.isLockedOut) {
@@ -180,6 +181,13 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({
               ? 'Step 2: Enter new 4-digit PIN'
               : 'Step 3: Confirm new 4-digit PIN'}
           </p>
+
+          {mode === 'unlock' && hasSavedSession && (
+            <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-semibold px-2.5 py-0.5 rounded-full animate-fadeIn">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Encrypted session detected (will auto-restore on unlock)</span>
+            </div>
+          )}
         </div>
 
         {/* Success message in Change PIN mode */}
