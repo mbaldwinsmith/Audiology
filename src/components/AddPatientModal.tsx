@@ -379,7 +379,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             </label>
             <textarea
               rows={2}
-              placeholder="e.g. Cerumen removed bilaterally via microsuction. Advised 2-week olive oil softening for remaining flakes."
+              placeholder="e.g. Ear wax removed bilaterally via microsuction. Advised 2-week olive oil softening for remaining flakes."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"

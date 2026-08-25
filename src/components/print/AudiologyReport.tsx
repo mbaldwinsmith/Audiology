@@ -78,7 +78,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           {/* Ear Check Findings (Left vs Right) */}
           <div className="mb-4">
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-              <span>Otoscopic Ear Examination Findings</span>
+              <span>Ear Examination Findings</span>
               <span className="text-[10px] font-normal text-brand-soft">Direct Visualization</span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white grid grid-cols-2 gap-3">
@@ -90,7 +90,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                     LEFT EAR (AS)
                   </span>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${patient.leftEarWax ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {patient.leftEarWax ? 'Cerumen Present' : 'Canal Clear'}
+                    {patient.leftEarWax ? 'Ear Wax Present' : 'Canal Clear'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-700 leading-snug">
@@ -106,7 +106,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                     RIGHT EAR (AD)
                   </span>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${patient.rightEarWax ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {patient.rightEarWax ? 'Cerumen Present' : 'Canal Clear'}
+                    {patient.rightEarWax ? 'Ear Wax Present' : 'Canal Clear'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-700 leading-snug">
@@ -119,7 +119,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           {/* Hearing Test Box */}
           <div className="mb-4">
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-              <span>Hearing Assessment &amp; Audiometry</span>
+              <span>Hearing Assessment</span>
               <span className="text-[10px] font-normal text-brand-soft">
                 {patient.audiogram ? 'Diagnostic Full Hearing Test Completed' : patient.screening ? 'Routine Screening' : 'Otoscopy Only'}
               </span>
@@ -135,12 +135,14 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   </span>
                   <span className="text-slate-700">Hearing Screening</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold ${patient.audiogram ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                    {patient.audiogram ? '✓' : '–'}
-                  </span>
-                  <span className="text-slate-700">Pure-Tone Diagnostic Full Hearing Test</span>
-                </div>
+                {patient.audiogram && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold bg-emerald-600 text-white">
+                      ✓
+                    </span>
+                    <span className="text-slate-700 font-medium">Pure-Tone Diagnostic Full Hearing Test</span>
+                  </div>
+                )}
                 {patient.audiogramImageUrl && (
                   <span className="text-brand-blue font-semibold text-[10px] ml-auto">
                     * Attached Full Hearing Test Chart on Page 2
@@ -179,7 +181,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 </span>
               </div>
               <p className="text-[11px] text-amber-950 leading-snug">
-                For optimal, safe cerumen removal, administer <strong>2 to 3 drops of medical-grade olive oil (Earol or pipette drops)</strong> into the affected ear(s) <strong>twice daily for 14 consecutive days</strong> prior to secondary instrumentation / irrigation. Do not insert cotton buds into ear canals.
+                For optimal, safe ear wax removal, administer <strong>2 to 3 drops of medical-grade olive oil (Earol or pipette drops)</strong> into the affected ear(s) <strong>twice daily for 14 consecutive days</strong> prior to secondary instrumentation / irrigation. Do not insert cotton buds into ear canals.
               </p>
             </div>
           )}

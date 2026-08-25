@@ -80,18 +80,18 @@ function generateDefaultClinicalFindings(
   screening: boolean,
   notes: string
 ) {
-  let leftEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing cerumen.';
-  let rightEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing cerumen.';
+  let leftEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
+  let rightEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
 
   if (leftWax && rightWax) {
-    leftEarFinding = 'Cerumen buildup identified. Wax removal performed / recommended.';
-    rightEarFinding = 'Cerumen buildup identified. Wax removal performed / recommended.';
+    leftEarFinding = 'Ear wax buildup identified. Wax removal performed / recommended.';
+    rightEarFinding = 'Ear wax buildup identified. Wax removal performed / recommended.';
   } else if (leftWax) {
-    leftEarFinding = 'Moderate to heavy cerumen impaction noted. Wax removal performed / recommended.';
+    leftEarFinding = 'Moderate to heavy ear wax impaction noted. Wax removal performed / recommended.';
     rightEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
   } else if (rightWax) {
     leftEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
-    rightEarFinding = 'Moderate to heavy cerumen impaction noted. Wax removal performed / recommended.';
+    rightEarFinding = 'Moderate to heavy ear wax impaction noted. Wax removal performed / recommended.';
   }
 
   let hearingTestResult = 'Initial otoscopic examination & hearing check completed.';
@@ -105,7 +105,7 @@ function generateDefaultClinicalFindings(
   let nextStep = 'Discharged / Routine 12-Month Review';
 
   if (leftWax || rightWax) {
-    recommendations = 'Apply 2-3 drops of medicinal olive oil twice daily for 14 days prior to follow-up ear irrigation / micro-suction if remaining cerumen persists.';
+    recommendations = 'Apply 2-3 drops of medicinal olive oil twice daily for 14 days prior to follow-up ear irrigation / micro-suction if remaining ear wax persists.';
     nextStep = 'Follow-up Wax Removal / 2-Week Softening';
   } else if (audiogram) {
     recommendations = 'Discussed hearing aid trial and communicative strategies with resident and care team.';
