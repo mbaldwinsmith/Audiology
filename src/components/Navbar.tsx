@@ -13,6 +13,7 @@ import {
   Lock,
   KeyRound,
   FileSpreadsheet,
+  HelpCircle,
 } from 'lucide-react';
 import { generateCsvTemplate } from '../utils/csvParser';
 
@@ -25,6 +26,7 @@ interface NavbarProps {
   onExportCleanedCsv?: () => void;
   onLock: () => void;
   onChangePin: () => void;
+  onOpenShortcuts?: () => void;
   hasData: boolean;
   totalPatientsCount: number;
 }
@@ -38,6 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onExportCleanedCsv,
   onLock,
   onChangePin,
+  onOpenShortcuts,
   hasData,
   totalPatientsCount,
 }) => {
@@ -213,6 +216,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {/* Keyboard Shortcuts Help */}
+            {onOpenShortcuts && (
+              <button
+                onClick={onOpenShortcuts}
+                className="flex items-center gap-1 text-xs bg-brand-navy-light hover:bg-slate-700 text-slate-200 border border-slate-600 px-2 py-1.5 rounded-md transition"
+                title="Keyboard Shortcuts (?)"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-brand-soft" />
+              </button>
+            )}
+
             {/* Change PIN Button */}
             <button
               onClick={onChangePin}
@@ -343,8 +357,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {/* Security PIN Options in mobile menu */}
+          {/* Security PIN & Shortcuts in mobile menu */}
           <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between gap-2">
+            {onOpenShortcuts && (
+              <button
+                onClick={() => {
+                  onOpenShortcuts();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg transition"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-brand-soft" />
+                <span>Shortcuts (?)</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 onChangePin();

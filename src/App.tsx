@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { EmptyState } from './components/EmptyState';
 import { BatchManager } from './components/BatchManager';
 import { AddPatientModal } from './components/AddPatientModal';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { BatchPrintContainer } from './components/print/BatchPrintContainer';
 import { BatchExportModal, BatchExportProgressState } from './components/BatchExportModal';
 import { PinLockModal } from './components/PinLockModal';
@@ -22,6 +23,7 @@ export function App() {
   const [isLocked, setIsLocked] = useState<boolean>(true);
   const [isChangePinOpen, setIsChangePinOpen] = useState<boolean>(false);
   const [isAddPatientOpen, setIsAddPatientOpen] = useState<boolean>(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [batchProgress, setBatchProgress] = useState<BatchExportProgressState>({
     isOpen: false,
     isCompleted: false,
@@ -202,6 +204,7 @@ export function App() {
         onExportCleanedCsv={handleExportCleanedCsv}
         onLock={() => setIsLocked(true)}
         onChangePin={() => setIsChangePinOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
         hasData={!!summary && patients.length > 0}
         totalPatientsCount={patients.length}
       />
@@ -231,6 +234,7 @@ export function App() {
                 onPrintBatch={handlePrintBatch}
                 onExportBatchZip={handleExportBatchZip}
                 onExportCleanedCsv={handleExportCleanedCsv}
+                onOpenShortcuts={() => setIsShortcutsOpen(true)}
               />
             </div>
           </>
@@ -249,6 +253,12 @@ export function App() {
         onAddPatient={handleAddPatient}
         summary={summary}
         existingCount={patients.length}
+      />
+
+      {/* Keyboard Shortcuts Guide Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
       />
 
       {/* Batch ZIP Export Modal with Live Progress Tracker */}

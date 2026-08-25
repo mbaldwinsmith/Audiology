@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   CareHomeSummary,
   PatientRow,
@@ -28,6 +28,10 @@ import {
   MoveHorizontal,
   UserPlus,
   FileSpreadsheet,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Keyboard,
 } from 'lucide-react';
 import {
   exportCareHomeReportPdf,
@@ -47,6 +51,7 @@ interface BatchManagerProps {
   onPrintBatch: () => void;
   onExportBatchZip: () => void;
   onExportCleanedCsv: () => void;
+  onOpenShortcuts?: () => void;
 }
 
 type ViewMode = 'care-home' | 'patient-report' | 'patient-invoice' | 'batch-print';
@@ -64,6 +69,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   onPrintBatch,
   onExportBatchZip,
   onExportCleanedCsv,
+  onOpenShortcuts,
 }) => {
   const [activeTab, setActiveTab] = useState<ViewMode>('care-home');
   const [mobilePane, setMobilePane] = useState<MobilePane>('preview');
@@ -75,8 +81,25 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   const [filterType, setFilterType] = useState<'all' | 'seen' | 'unseen' | 'wax' | 'audiogram'>('all');
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
+  // Zoom & Viewport Scaling State
+  const [zoomPercent, setZoomPercent] = useState<number>(100);
+  const [isFitToWidth, setIsFitToWidth] = useState<boolean>(true);
+  const [containerWidth, setContainerWidth] = useState<number>(850);
+
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const selectedPatient = patients.find((p) => p.id === selectedPatientId) || patients[0];
+
+  // Measure preview container for auto-fit calculation
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (previewContainerRef.current) {
+        setContainerWidth(previewContainerRef.current.clientWidth);
+      }
+    };
+    updateContainerWidth();
+    window.addEventListener('resize', updateContainerWidth);
+    return () => window.removeEventListener('resize', updateContainerWidth);
+  }, []);
 
   // Filtered patients for sidebar list
   const filteredPatients = patients.filter((p) => {
@@ -94,14 +117,81 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
     return true;
   });
 
-  const handlePatientSelect = (p: PatientRow) => {
+  const handlePatientSelect = useCallback((p: PatientRow) => {
     setSelectedPatientId(p.id);
     if (activeTab === 'care-home') {
       setActiveTab(p.seen ? 'patient-report' : 'care-home');
     }
     // On mobile, switch to preview when a patient is tapped
     setMobilePane('preview');
+  }, [activeTab]);
+
+  // Compute effective zoom scale (A4 width at 96dpi is ~794px + padding ~800px)
+  const a4BaseWidth = 800;
+  const fitScale = Math.min(1, Math.max(0.4, (containerWidth - 24) / a4BaseWidth));
+  const effectiveZoom = isFitToWidth ? fitScale : zoomPercent / 100;
+
+  const handleZoomIn = () => {
+    setIsFitToWidth(false);
+    setZoomPercent((prev) => Math.min(150, Math.round((prev + 10) / 10) * 10));
   };
+
+  const handleZoomOut = () => {
+    setIsFitToWidth(false);
+    setZoomPercent((prev) => Math.max(40, Math.round((prev - 10) / 10) * 10));
+  };
+
+  // Keyboard Shortcuts Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || targetTag === 'SELECT') {
+        return;
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        const currentIdx = filteredPatients.findIndex((p) => p.id === selectedPatientId);
+        if (currentIdx < filteredPatients.length - 1) {
+          handlePatientSelect(filteredPatients[currentIdx + 1]);
+        }
+      } else if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        const currentIdx = filteredPatients.findIndex((p) => p.id === selectedPatientId);
+        if (currentIdx > 0) {
+          handlePatientSelect(filteredPatients[currentIdx - 1]);
+        }
+      } else if (e.key === '1') {
+        setActiveTab('care-home');
+      } else if (e.key === '2') {
+        if (selectedPatient?.seen) setActiveTab('patient-report');
+      } else if (e.key === '3') {
+        if (selectedPatient?.seen) setActiveTab('patient-invoice');
+      } else if (e.key === '4') {
+        setActiveTab('batch-print');
+      } else if (e.key.toLowerCase() === 'e') {
+        if (selectedPatient?.seen) {
+          e.preventDefault();
+          setShowEditor((prev) => !prev);
+        }
+      } else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        handleZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        handleZoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        setIsFitToWidth((prev) => !prev);
+      } else if (e.key === '?') {
+        e.preventDefault();
+        onOpenShortcuts?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredPatients, selectedPatientId, selectedPatient, onOpenShortcuts, handlePatientSelect]);
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full min-w-0">
@@ -437,7 +527,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                     }`}
                   >
                     <Settings2 className="w-3.5 h-3.5 text-brand-blue" />
-                    <span>{showEditor ? 'Hide Editor' : 'Edit Record'}</span>
+                    <span>{showEditor ? 'Hide Editor' : 'Edit Record (E)'}</span>
                   </button>
                 )}
 
@@ -518,13 +608,80 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
             </div>
           )}
 
-          {/* Mobile Swipe Hint */}
-          <div className="no-print lg:hidden flex items-center justify-center gap-1.5 text-[11px] text-slate-600 bg-slate-200/90 py-1 px-3 rounded-lg border border-slate-300">
-            <MoveHorizontal className="w-3.5 h-3.5 text-brand-blue animate-pulse" />
-            <span>Swipe horizontally on the report to view full width</span>
+          {/* Document Zoom & Fit Toolbar */}
+          <div className="no-print flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm text-xs gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 font-semibold text-[11px] hidden sm:inline">Document Zoom:</span>
+              
+              <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  className="p-1 text-slate-600 hover:text-slate-900 hover:bg-white rounded transition"
+                  title="Zoom Out (-)"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="font-mono text-[11px] font-bold text-brand-navy w-12 text-center select-none">
+                  {Math.round(effectiveZoom * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  className="p-1 text-slate-600 hover:text-slate-900 hover:bg-white rounded transition"
+                  title="Zoom In (+)"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsFitToWidth(true)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition flex items-center gap-1 ${
+                  isFitToWidth
+                    ? 'bg-brand-navy text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+                title="Fit document to screen width (0)"
+              >
+                <Maximize2 className="w-3 h-3" />
+                <span>Fit Width</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFitToWidth(false);
+                  setZoomPercent(100);
+                }}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition ${
+                  !isFitToWidth && zoomPercent === 100
+                    ? 'bg-brand-navy text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+                title="Reset to 100% standard size"
+              >
+                100%
+              </button>
+            </div>
+
+            {/* Keyboard Shortcuts Trigger */}
+            {onOpenShortcuts && (
+              <button
+                type="button"
+                onClick={onOpenShortcuts}
+                className="flex items-center gap-1 text-[11px] text-slate-600 hover:text-brand-navy bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg font-medium transition"
+                title="View Keyboard Shortcuts (?)"
+              >
+                <Keyboard className="w-3.5 h-3.5 text-brand-blue" />
+                <span className="hidden sm:inline">Shortcuts</span>
+                <kbd className="px-1 bg-white border border-slate-300 rounded text-[9px] font-mono font-bold text-slate-500">?</kbd>
+              </button>
+            )}
           </div>
 
-          {/* Document Preview Stage (Exact A4 Container) */}
+          {/* Document Preview Stage (Exact A4 Container with Scaled Wrapper) */}
           <div
             ref={previewContainerRef}
             className="document-preview-stage w-full max-w-full overflow-x-auto overflow-y-visible p-2 sm:p-4 bg-slate-300/60 rounded-xl"
@@ -534,43 +691,51 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
               touchAction: 'pan-x pan-y',
             }}
           >
-            <div className="w-fit min-w-[210mm] mx-auto flex flex-col items-center">
-              {activeTab === 'care-home' && <CareHomeReport summary={summary} />}
+            <div
+              className="w-full flex justify-center origin-top transition-transform duration-150"
+              style={{
+                transform: `scale(${effectiveZoom})`,
+                marginBottom: effectiveZoom < 1 ? `calc((1 - ${effectiveZoom}) * -900px)` : undefined,
+              }}
+            >
+              <div className="w-[210mm] min-w-[210mm] flex flex-col items-center">
+                {activeTab === 'care-home' && <CareHomeReport summary={summary} />}
 
-              {activeTab === 'patient-report' && selectedPatient && (
-                selectedPatient.seen ? (
-                  <AudiologyReport patient={selectedPatient} />
-                ) : (
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
-                    <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-2" />
-                    <h3 className="text-sm font-bold text-slate-800 mb-1">Patient Not Seen</h3>
-                    <p className="text-xs text-slate-600 mb-2">
-                      {selectedPatient.residentFullName} was not seen ({selectedPatient.reasonNotSeen}).
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Per clinical rules, individual summaries and invoices are not generated for unseen residents.
-                    </p>
-                  </div>
-                )
-              )}
+                {activeTab === 'patient-report' && selectedPatient && (
+                  selectedPatient.seen ? (
+                    <AudiologyReport patient={selectedPatient} />
+                  ) : (
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
+                      <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-2" />
+                      <h3 className="text-sm font-bold text-slate-800 mb-1">Patient Not Seen</h3>
+                      <p className="text-xs text-slate-600 mb-2">
+                        {selectedPatient.residentFullName} was not seen ({selectedPatient.reasonNotSeen}).
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        Per clinical rules, individual summaries and invoices are not generated for unseen residents.
+                      </p>
+                    </div>
+                  )
+                )}
 
-              {activeTab === 'patient-invoice' && selectedPatient && (
-                selectedPatient.seen ? (
-                  <AudiologyInvoice patient={selectedPatient} />
-                ) : (
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
-                    <Receipt className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-                    <h3 className="text-sm font-bold text-slate-800 mb-1">No Invoice Generated</h3>
-                    <p className="text-xs text-slate-600">
-                      {selectedPatient.residentFullName} was not seen. Invoices are generated exclusively for attended consultations.
-                    </p>
-                  </div>
-                )
-              )}
+                {activeTab === 'patient-invoice' && selectedPatient && (
+                  selectedPatient.seen ? (
+                    <AudiologyInvoice patient={selectedPatient} />
+                  ) : (
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
+                      <Receipt className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+                      <h3 className="text-sm font-bold text-slate-800 mb-1">No Invoice Generated</h3>
+                      <p className="text-xs text-slate-600">
+                        {selectedPatient.residentFullName} was not seen. Invoices are generated exclusively for attended consultations.
+                      </p>
+                    </div>
+                  )
+                )}
 
-              {activeTab === 'batch-print' && (
-                <BatchPrintContainer summary={summary} patients={patients} />
-              )}
+                {activeTab === 'batch-print' && (
+                  <BatchPrintContainer summary={summary} patients={patients} />
+                )}
+              </div>
             </div>
           </div>
         </div>
