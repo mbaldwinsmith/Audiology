@@ -3,10 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-slate-100 text-slate-900 min-h-screen font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
   }
 }
 
@@ -14,20 +20,28 @@
 .a4-page {
   width: 210mm;
   min-height: 297mm;
-  margin-left: auto;
-  margin-right: auto;
   background: #ffffff;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 @media screen {
   .a4-page {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
+  }
+
+  .document-preview-stage {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
   }
 }
 
-/* Exact Print Rules */
+/* Exact Print Rules - Strictly Isolated & Pixel-Perfect */
 @media print {
   @page {
     size: A4 portrait;
@@ -43,6 +57,7 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
+    overflow: visible !important;
   }
 
   .no-print {
@@ -64,6 +79,7 @@
     page-break-after: always !important;
     break-after: page !important;
     overflow: hidden !important;
+    transform: none !important;
   }
 
   .page-break {
@@ -79,8 +95,8 @@
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -94,4 +110,33 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Horizontal scrollbar styling for preview stage */
+.document-preview-stage::-webkit-scrollbar {
+  height: 8px;
+}
+
+.document-preview-stage::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.document-preview-stage::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.document-preview-stage::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Animation utilities for mobile menus & drawers */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

@@ -73,7 +73,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                 {summary.seenPatients.map((p, idx) => {
                   const services: string[] = [];
                   if (p.screening) services.push('Screening (Free)');
-                  if (p.hasEarWax) services.push(p.leftEarWax && p.rightEarWax ? 'Bilateral Wax (£80)' : 'Wax Removal (£80)');
+                  if (p.hasEarWax) services.push('Wax Removal (£80)');
                   if (p.audiogram) services.push('Audiogram (£50)');
                   const servicesText = services.length > 0 ? services.join(', ') : 'Otoscopy Check';
 

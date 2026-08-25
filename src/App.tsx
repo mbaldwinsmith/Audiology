@@ -145,7 +145,7 @@ export function App() {
   }, [summary, patients]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-100 w-full overflow-x-hidden">
       <Navbar
         onFileUpload={handleFileUpload}
         onLoadSampleData={handleLoadSampleData}
@@ -156,7 +156,7 @@ export function App() {
         totalPatientsCount={patients.length}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full min-w-0">
         {summary && patients.length > 0 ? (
           <>
             {/* Standard Screen & Single Document View */}
@@ -168,7 +168,7 @@ export function App() {
               )}
             </div>
 
-            <div className={isPrintAllMode ? 'print:hidden' : 'block'}>
+            <div className={isPrintAllMode ? 'print:hidden' : 'block w-full min-w-0'}>
               <BatchManager
                 summary={summary}
                 patients={patients}

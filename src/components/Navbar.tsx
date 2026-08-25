@@ -6,10 +6,11 @@ import {
   Trash2,
   Wifi,
   WifiOff,
-  FileSpreadsheet,
-  Layers,
   Sparkles,
   Archive,
+  Menu,
+  X,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { generateCsvTemplate } from '../utils/csvParser';
 
@@ -33,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalPatientsCount,
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -68,34 +71,36 @@ export const Navbar: React.FC<NavbarProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <header className="no-print bg-brand-navy text-white shadow-md border-b border-brand-navy-dark sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo & Branding */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="bg-white/10 p-0.5 rounded-full ring-2 ring-white/20 shadow-sm flex items-center justify-center">
-              <img src="./logo.png" alt="EliteSight HomeCare" className="h-9 w-9 object-contain rounded-full bg-white" />
+              <img
+                src="./logo.png"
+                alt="EliteSight HomeCare"
+                className="h-7 w-7 sm:h-9 sm:w-9 object-contain rounded-full bg-white"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base tracking-tight text-white">
+                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">
                   Audiology Portal
                 </span>
-                <span className="bg-brand-blue text-xs font-semibold px-2 py-0.5 rounded-full text-brand-soft">
-                  PWA
-                </span>
               </div>
-              <p className="text-[10px] text-slate-300 font-light hidden sm:block">
+              <p className="text-[9px] sm:text-[10px] text-slate-300 font-light hidden md:block">
                 Zero-Retention Batch Generator &amp; Clinical Records
               </p>
             </div>
           </div>
 
-          {/* Actions & Offline Status */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Desktop & Tablet Actions */}
+          <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
             {/* Offline/Online Badge */}
             <div
               className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
@@ -103,20 +108,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
                   : 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
               }`}
-              title={isOnline ? 'Connected (Offline PWA ready)' : 'Working Offline'}
+              title={isOnline ? 'Connected' : 'Working Offline'}
             >
-              {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-amber-400" />}
-              <span className="hidden md:inline">{isOnline ? 'PWA Ready' : 'Offline Mode'}</span>
+              {isOnline ? (
+                <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+              )}
+              <span className="hidden lg:inline">{isOnline ? 'Connected' : 'Offline Mode'}</span>
             </div>
 
             {/* Template Download */}
             <button
               onClick={handleDownloadTemplate}
-              className="flex items-center gap-1.5 text-xs bg-brand-navy-light hover:bg-brand-navy-dark border border-slate-600 px-3 py-1.5 rounded-md text-slate-200 transition"
+              className="flex items-center gap-1.5 text-xs bg-brand-navy-light hover:bg-brand-navy-dark border border-slate-600 px-2.5 py-1.5 rounded-md text-slate-200 transition"
               title="Download CSV Schema Template"
             >
               <Download className="w-3.5 h-3.5 text-brand-soft" />
-              <span className="hidden md:inline">CSV Template</span>
+              <span className="hidden xl:inline">CSV Template</span>
             </button>
 
             {/* Hidden File Input */}
@@ -131,20 +140,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Upload CSV Button */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs bg-brand-blue hover:bg-brand-blue-hover text-white font-medium px-3.5 py-1.5 rounded-md shadow-sm transition"
+              className="flex items-center gap-1.5 text-xs bg-brand-blue hover:bg-brand-blue-hover text-white font-medium px-3 py-1.5 rounded-md shadow-sm transition"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Import CSV</span>
             </button>
 
-            {/* Load Sample Data (When empty or for quick testing) */}
+            {/* Load Sample Data (When empty) */}
             {!hasData && (
               <button
                 onClick={onLoadSampleData}
                 className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-md shadow-sm transition"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Load Sample</span>
+                <span>Load Sample</span>
               </button>
             )}
 
@@ -152,11 +161,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             {hasData && (
               <button
                 onClick={onExportBatchZip}
-                className="flex items-center gap-1.5 text-xs bg-brand-navy-light hover:bg-slate-700 text-brand-soft border border-brand-blue/50 font-semibold px-3.5 py-1.5 rounded-md shadow-sm transition"
-                title="Export all individual PDFs named after patients and reference numbers in a ZIP archive"
+                className="flex items-center gap-1.5 text-xs bg-brand-navy-light hover:bg-slate-700 text-brand-soft border border-brand-blue/50 font-semibold px-3 py-1.5 rounded-md shadow-sm transition"
+                title="Export all individual PDFs in a ZIP archive"
               >
                 <Archive className="w-3.5 h-3.5 text-brand-soft" />
-                <span className="hidden sm:inline">Export ZIP</span>
+                <span>Export ZIP</span>
               </button>
             )}
 
@@ -164,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {hasData && (
               <button
                 onClick={onPrint}
-                className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3.5 py-1.5 rounded-md shadow-sm transition"
+                className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-md shadow-sm transition"
                 title="Print or Save as single multi-page PDF"
               >
                 <Printer className="w-4 h-4" />
@@ -177,15 +186,119 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onResetSession}
                 className="flex items-center gap-1 text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 px-2.5 py-1.5 rounded-md transition"
-                title="GDPR Zero-Retention Reset (Wipe in-memory state)"
+                title="GDPR Zero-Retention Reset"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden lg:inline">Reset</span>
+                <span className="hidden xl:inline">Reset</span>
               </button>
             )}
           </div>
+
+          {/* Mobile Right Controls: Online pill + Hamburger button */}
+          <div className="flex md:hidden items-center gap-2">
+            {/* Compact Online Status */}
+            <div
+              className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                isOnline
+                  ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
+              }`}
+            >
+              {isOnline ? (
+                <Wifi className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <WifiOff className="w-3 h-3 text-amber-400" />
+              )}
+              <span>{isOnline ? 'Connected' : 'Offline'}</span>
+            </div>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1.5 rounded-md bg-brand-navy-light hover:bg-brand-navy-dark text-slate-200 border border-slate-700 transition"
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Drawer Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-brand-navy-dark bg-brand-navy/95 backdrop-blur-md px-4 py-3 space-y-2 animate-fadeIn shadow-xl">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => {
+                fileInputRef.current?.click();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 text-xs bg-brand-blue hover:bg-brand-blue-hover text-white font-medium p-2.5 rounded-lg shadow-sm transition"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Import CSV</span>
+            </button>
+
+            <button
+              onClick={handleDownloadTemplate}
+              className="flex items-center justify-center gap-2 text-xs bg-brand-navy-light hover:bg-slate-700 text-slate-200 border border-slate-600 p-2.5 rounded-lg transition"
+            >
+              <Download className="w-4 h-4 text-brand-soft" />
+              <span>CSV Template</span>
+            </button>
+          </div>
+
+          {!hasData && (
+            <button
+              onClick={() => {
+                onLoadSampleData();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium p-2.5 rounded-lg shadow-sm transition"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Load Sample 10-Patient Care Home</span>
+            </button>
+          )}
+
+          {hasData && (
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={() => {
+                  onExportBatchZip();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-xs bg-brand-navy-light hover:bg-slate-700 text-brand-soft border border-brand-blue/50 font-semibold p-2.5 rounded-lg shadow-sm transition"
+              >
+                <Archive className="w-4 h-4 text-brand-soft" />
+                <span>Export Batch ZIP (All PDFs)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onPrint();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold p-2.5 rounded-lg shadow-sm transition"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print All Documents ({totalPatientsCount})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onResetSession();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 p-2 rounded-lg transition"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>GDPR Zero-Retention Reset</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 };
