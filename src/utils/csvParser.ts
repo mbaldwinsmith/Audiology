@@ -35,6 +35,12 @@ export function validateHeaders(headers: string[]): { missing: string[]; matched
       } else if (col === 'Reason not seen' && normalizedHeaders.some((h) => h.includes('reason'))) {
         const found = headers[normalizedHeaders.findIndex((h) => h.includes('reason'))];
         matched[col] = found;
+      } else if (
+        col === 'Full Hearing Test?' &&
+        normalizedHeaders.some((h) => h.includes('hearing') || h.includes('audiogram') || h.includes('test'))
+      ) {
+        const found = headers[normalizedHeaders.findIndex((h) => h.includes('hearing') || h.includes('audiogram') || h.includes('test'))];
+        matched[col] = found;
       } else {
         missing.push(col);
       }
@@ -90,7 +96,7 @@ function generateDefaultClinicalFindings(
 
   let hearingTestResult = 'Initial otoscopic examination & hearing check completed.';
   if (audiogram) {
-    hearingTestResult = 'Comprehensive pure-tone air conduction diagnostic audiogram completed.';
+    hearingTestResult = 'Comprehensive pure-tone air conduction diagnostic full hearing test completed.';
   } else if (screening) {
     hearingTestResult = 'Routine hearing screening performed. Normal threshold indicators detected.';
   }
@@ -155,7 +161,10 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const seenRaw = getRowValue(row, 'Seen?', matched);
           const reasonNotSeenRaw = getRowValue(row, 'Reason not seen', matched);
           const screeningRaw = getRowValue(row, 'Screening?', matched);
-          const audiogramRaw = getRowValue(row, 'Audiogram?', matched);
+          const audiogramRaw =
+            getRowValue(row, 'Full Hearing Test?', matched) ||
+            getRowValue(row, 'Audiogram?', matched) ||
+            getRowValue(row, 'Hearing Test?', matched);
           const leftWaxRaw = getRowValue(row, 'Left Ear Wax?', matched);
           const rightWaxRaw = getRowValue(row, 'Right Ear Wax', matched);
           const notesRaw = getRowValue(row, 'Notes', matched);
@@ -457,7 +466,7 @@ export function generateCleanedCsv(
       'Seen?': p.seen ? 'Yes' : 'No',
       'Reason not seen': p.reasonNotSeen,
       'Screening?': p.screening ? 'Yes' : 'No',
-      'Audiogram?': p.audiogram ? 'Yes' : 'No',
+      'Full Hearing Test?': p.audiogram ? 'Yes' : 'No',
       'Left Ear Wax?': p.leftEarWax ? 'Yes' : 'No',
       'Right Ear Wax': p.rightEarWax ? 'Yes' : 'No',
       'Notes': p.notes,

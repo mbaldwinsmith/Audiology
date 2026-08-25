@@ -372,7 +372,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                       : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  {ft}
+                  {ft === 'audiogram' ? 'Full Hearing Test' : ft}
                 </button>
               ))}
             </div>
@@ -409,7 +409,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                         <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                           {p.hasEarWax && <span className="text-amber-700 font-medium">Wax Removal</span>}
                           {p.hasEarWax && p.audiogram && <span>•</span>}
-                          {p.audiogram && <span className="text-brand-blue font-medium">Audiogram</span>}
+                          {p.audiogram && <span className="text-brand-blue font-medium">Full Hearing Test</span>}
                           {!p.hasEarWax && !p.audiogram && <span>Screening (Free)</span>}
                         </div>
                       )}

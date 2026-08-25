@@ -9,6 +9,7 @@ export interface RawCsvRow {
   'Seen?'?: string;
   'Reason not seen'?: string;
   'Screening?'?: string;
+  'Full Hearing Test?'?: string;
   'Audiogram?'?: string;
   'Left Ear Wax?'?: string;
   'Right Ear Wax'?: string;

@@ -308,7 +308,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                   </span>
                 </button>
 
-                {/* Audiogram */}
+                {/* Full Hearing Test */}
                 <button
                   type="button"
                   onClick={() => setAudiogram(!audiogram)}
@@ -319,7 +319,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-semibold">Audiogram Assessment</div>
+                    <div className="text-xs font-semibold">Full Hearing Test</div>
                     <div className="text-[10px] text-brand-blue font-bold">£50.00</div>
                   </div>
                   <span className={`text-xs ${audiogram ? 'text-brand-blue' : 'text-slate-300'}`}>

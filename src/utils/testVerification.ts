@@ -44,9 +44,9 @@ export async function runSelfVerification() {
   const items1 = calculateLineItems(true, false, false, false);
   console.assert(calculateTotalAmount(items1) === 0, 'Test 3.1 failed: Screening should be £0');
 
-  // Audiogram only
+  // Full Hearing Test only
   const items2 = calculateLineItems(true, true, false, false);
-  console.assert(calculateTotalAmount(items2) === 50, 'Test 3.2 failed: Audiogram should be £50');
+  console.assert(calculateTotalAmount(items2) === 50, 'Test 3.2 failed: Full Hearing Test should be £50');
 
   // Single ear wax
   const items3 = calculateLineItems(true, false, true, false);
@@ -56,9 +56,9 @@ export async function runSelfVerification() {
   const items4 = calculateLineItems(true, false, true, true);
   console.assert(calculateTotalAmount(items4) === 80, 'Test 3.4 failed: Bilateral wax flat fee should be £80');
 
-  // Bilateral wax + Audiogram
+  // Bilateral wax + Full Hearing Test
   const items5 = calculateLineItems(true, true, true, true);
-  console.assert(calculateTotalAmount(items5) === 130, 'Test 3.5 failed: Wax + Audiogram should be £130');
+  console.assert(calculateTotalAmount(items5) === 130, 'Test 3.5 failed: Wax + Full Hearing Test should be £130');
   console.log('✔ Phase 3 Pricing & Automated Invoicing Rules Passed');
 
   // Test 4: Full CSV Parsing & Exclusion verification

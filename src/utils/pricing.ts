@@ -4,7 +4,7 @@ import { PRICING } from './constants';
 /**
  * Generates invoice line items based on services performed:
  * - Screening: £0.00
- * - Audiogram: £50.00
+ * - Full Hearing Test: £50.00
  * - Ear Wax Removal: £80.00 flat fee (left, right, or bilateral)
  */
 export function calculateLineItems(
@@ -41,7 +41,7 @@ export function calculateLineItems(
   if (audiogram) {
     items.push({
       id: 'item-audiogram',
-      description: 'Comprehensive Diagnostic Audiogram / Hearing Assessment',
+      description: 'Comprehensive Diagnostic Full Hearing Test',
       quantity: 1,
       unit: 'Assessment',
       unitPrice: PRICING.AUDIOGRAM,

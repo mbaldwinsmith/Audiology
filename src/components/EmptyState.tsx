@@ -129,7 +129,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             2. Patient Ear &amp; Hearing Summary
           </h4>
           <p className="text-[11px] sm:text-xs text-slate-600 mt-1 leading-relaxed">
-            Otoscopy findings per ear, recommendations, 2-week olive oil regimen block, and optional Page 2 audiogram.
+            Otoscopy findings per ear, recommendations, 2-week olive oil regimen block, and optional Page 2 full hearing test.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             3. Itemized Audiology Invoice
           </h4>
           <p className="text-[11px] sm:text-xs text-slate-600 mt-1 leading-relaxed">
-            0% VAT medical billing with automated pricing (£0 Screening, £50 Audiogram, £80 Wax) &amp; SumUp details.
+            0% VAT medical billing with automated pricing (£0 Screening, £50 Full Hearing Test, £80 Wax) &amp; SumUp details.
           </p>
         </div>
       </div>

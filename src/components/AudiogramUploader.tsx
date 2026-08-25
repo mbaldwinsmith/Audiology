@@ -37,7 +37,7 @@ export const AudiogramUploader: React.FC<AudiogramUploaderProps> = ({
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
           <ImageIcon className="w-4 h-4 text-brand-blue" />
-          Page 2 Audiogram Chart Attachment ({patientName})
+          Page 2 Full Hearing Test Chart Attachment ({patientName})
         </h4>
         {currentImageUrl && (
           <button
@@ -53,11 +53,11 @@ export const AudiogramUploader: React.FC<AudiogramUploaderProps> = ({
         <div className="flex items-center gap-4 bg-slate-50 p-2.5 rounded-md border border-slate-200">
           <img
             src={currentImageUrl}
-            alt="Audiogram Preview"
+            alt="Full Hearing Test Preview"
             className="h-16 w-24 object-cover rounded border border-slate-300"
           />
           <div className="text-xs text-slate-600">
-            <span className="font-semibold text-emerald-700 block">✓ Audiogram Chart Attached</span>
+            <span className="font-semibold text-emerald-700 block">✓ Full Hearing Test Chart Attached</span>
             <span className="text-[11px] text-slate-500">
               Page 2 will be automatically included when printing or previewing this patient's report.
             </span>
@@ -81,7 +81,7 @@ export const AudiogramUploader: React.FC<AudiogramUploaderProps> = ({
           />
           <Upload className="w-6 h-6 text-slate-400 mx-auto mb-1.5" />
           <p className="text-xs font-semibold text-slate-700">
-            Click or drag &amp; drop an audiogram image chart (PNG/JPG)
+            Click or drag &amp; drop a full hearing test image chart (PNG/JPG)
           </p>
           <p className="text-[10px] text-slate-400 mt-0.5">
             Appends an exact A4 Page 2 Diagnostic Chart to this resident's summary

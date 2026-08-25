@@ -129,7 +129,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             </span>
           </button>
 
-          {/* Pure Tone Audiogram */}
+          {/* Pure Tone Full Hearing Test */}
           <button
             type="button"
             onClick={() => handleToggleService('audiogram')}
@@ -140,7 +140,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             }`}
           >
             <div>
-              <div className="text-[11px] sm:text-xs">Audiogram</div>
+              <div className="text-[11px] sm:text-xs">Full Hearing Test</div>
               <div className="text-[9px] sm:text-[10px] text-slate-500">£50.00</div>
             </div>
             <span className={`text-xs ${patient.audiogram ? 'text-brand-blue' : 'text-slate-300'}`}>

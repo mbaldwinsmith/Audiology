@@ -75,7 +75,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                   const services: string[] = [];
                   if (p.screening) services.push('Screening (Free)');
                   if (p.hasEarWax) services.push('Wax Removal (£80)');
-                  if (p.audiogram) services.push('Audiogram (£50)');
+                  if (p.audiogram) services.push('Full Hearing Test (£50)');
                   const servicesText = services.length > 0 ? services.join(', ') : 'Otoscopy Check';
 
                   return (
@@ -140,7 +140,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
               <p className="text-[10px] text-slate-500 mt-1">Initial otoscopy &amp; threshold evaluation</p>
             </div>
             <div className="border border-slate-200 rounded p-2 bg-slate-50/50">
-              <div className="font-semibold text-slate-700">Audiograms Performed</div>
+              <div className="font-semibold text-slate-700">Full Hearing Tests Performed</div>
               <div className="text-base font-bold text-brand-blue mt-0.5">{summary.audiogramsCount}</div>
               <p className="text-[10px] text-slate-500 mt-1">Pure tone diagnostic assessment</p>
             </div>

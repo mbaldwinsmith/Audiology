@@ -121,7 +121,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Hearing Assessment &amp; Audiometry</span>
               <span className="text-[10px] font-normal text-brand-soft">
-                {patient.audiogram ? 'Diagnostic Audiogram Completed' : patient.screening ? 'Routine Screening' : 'Otoscopy Only'}
+                {patient.audiogram ? 'Diagnostic Full Hearing Test Completed' : patient.screening ? 'Routine Screening' : 'Otoscopy Only'}
               </span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white">
@@ -139,11 +139,11 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   <span className={`w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold ${patient.audiogram ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
                     {patient.audiogram ? '✓' : '–'}
                   </span>
-                  <span className="text-slate-700">Pure-Tone Diagnostic Audiogram</span>
+                  <span className="text-slate-700">Pure-Tone Diagnostic Full Hearing Test</span>
                 </div>
                 {patient.audiogramImageUrl && (
                   <span className="text-brand-blue font-semibold text-[10px] ml-auto">
-                    * Attached Audiogram Chart on Page 2
+                    * Attached Full Hearing Test Chart on Page 2
                   </span>
                 )}
               </div>
@@ -196,7 +196,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
         </div>
       </div>
 
-      {/* PAGE 2: Optional Audiogram Chart Container */}
+      {/* PAGE 2: Optional Full Hearing Test Chart Container */}
       {patient.audiogramImageUrl && (
         <div className="a4-page p-8 md:p-10 flex flex-col justify-between page-break leading-relaxed">
           <div>
@@ -206,7 +206,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 <img src="./logo.png" alt="EliteSight HomeCare" className="h-10 w-10 object-contain" />
                 <div>
                   <h1 className="text-base font-extrabold text-brand-navy uppercase tracking-tight">
-                    Pure-Tone Audiogram Chart
+                    Pure-Tone Full Hearing Test Chart
                   </h1>
                   <p className="text-[10px] text-slate-500 font-semibold">
                     CLINICAL DIAGNOSTIC ATTACHMENT
@@ -219,15 +219,15 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
               </div>
             </div>
 
-            {/* Audiogram Image Display */}
+            {/* Full Hearing Test Image Display */}
             <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 bg-white flex flex-col items-center justify-center min-h-[480px]">
               <img
                 src={patient.audiogramImageUrl}
-                alt="Audiogram Chart"
+                alt="Full Hearing Test Chart"
                 className="max-h-[440px] max-w-full object-contain rounded shadow-sm"
               />
               <p className="text-[10px] text-slate-400 mt-3 italic">
-                Diagnostic audiogram recording hearing thresholds (dB HL vs Frequency Hz)
+                Diagnostic full hearing test recording hearing thresholds (dB HL vs Frequency Hz)
               </p>
             </div>
           </div>

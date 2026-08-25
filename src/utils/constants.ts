@@ -17,6 +17,7 @@ export const COMPANY_DETAILS: CompanyDetails = {
 export const PRICING = {
   SCREENING: 0.0,
   AUDIOGRAM: 50.0,
+  FULL_HEARING_TEST: 50.0,
   EAR_WAX_REMOVAL: 80.0,
   PAYMENT_TERMS_DAYS: 7,
   VAT_RATE: 0.0, // 0% VAT
@@ -33,8 +34,9 @@ export const CSV_REQUIRED_COLUMNS = [
   'Seen?',
   'Reason not seen',
   'Screening?',
-  'Audiogram?',
+  'Full Hearing Test?',
   'Left Ear Wax?',
   'Right Ear Wax',
   'Notes',
 ] as const;
+
