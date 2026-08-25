@@ -41,10 +41,14 @@ export interface PatientRow {
   careHomeInitials: string;
   patientInitials: string;
   
-  // Billing fields
+  // Billing & Payment fields
   dueDate: string; // DD/MM/YYYY (appointmentDate + 7 days)
   lineItems: InvoiceLineItem[];
   totalAmount: number; // in GBP (£)
+  isPaid?: boolean;
+  paymentMethod?: string; // 'SumUp Card Reader' | 'BACS Bank Transfer' | 'Cash' | 'Cheque' | 'Care Home Account' | string
+  paymentDate?: string; // DD/MM/YYYY
+  paymentRef?: string; // Transaction auth or bank ref
 
   // Clinical customization fields (for interactive live edit)
   leftEarFinding?: string;
@@ -74,6 +78,10 @@ export interface CareHomeSummary {
   seenPatientsCount: number;
   unseenPatientsCount: number;
   totalRevenue: number;
+  totalPaidRevenue: number;
+  totalPendingRevenue: number;
+  paidInvoicesCount: number;
+  unpaidInvoicesCount: number;
   screeningsCount: number;
   audiogramsCount: number;
   waxRemovalCount: number;

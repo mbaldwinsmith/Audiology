@@ -160,6 +160,18 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const rightWaxRaw = getRowValue(row, 'Right Ear Wax', matched);
           const notesRaw = getRowValue(row, 'Notes', matched);
 
+          // Optional Payment Ingestion (from previously exported cleaned CSVs)
+          const paymentStatusRaw = getRowValue(row, 'Payment Status', matched) || getRowValue(row, 'Paid?', matched);
+          const isPaid =
+            paymentStatusRaw.toLowerCase().includes('paid') ||
+            paymentStatusRaw.toLowerCase() === 'yes' ||
+            paymentStatusRaw.toLowerCase() === 'true';
+          const paymentMethod = getRowValue(row, 'Payment Method', matched) || (isPaid ? 'SumUp Card Reader' : '');
+          const paymentDate =
+            normalizeDate(getRowValue(row, 'Payment Date', matched)) || (isPaid ? normalizeDate(appDateRaw) || '' : '');
+          const paymentRef =
+            getRowValue(row, 'Payment Ref', matched) || getRowValue(row, 'Transaction Ref', matched) || '';
+
           // Validation checks
           if (!firstNameRaw && !surnameRaw) {
             warnings.push({
@@ -233,6 +245,10 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
             dueDate,
             lineItems,
             totalAmount,
+            isPaid: seen ? isPaid : false,
+            paymentMethod: seen && isPaid ? paymentMethod : '',
+            paymentDate: seen && isPaid ? paymentDate || appointmentDate : '',
+            paymentRef: seen && isPaid ? paymentRef : '',
             leftEarFinding: clinicalDefaults.leftEarFinding,
             rightEarFinding: clinicalDefaults.rightEarFinding,
             hearingTestResult: clinicalDefaults.hearingTestResult,
@@ -247,6 +263,13 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
         const unseenPatients = patients.filter((p) => !p.seen);
 
         const totalRevenue = seenPatients.reduce((sum, p) => sum + p.totalAmount, 0);
+        const totalPaidRevenue = seenPatients
+          .filter((p) => p.isPaid)
+          .reduce((sum, p) => sum + p.totalAmount, 0);
+        const totalPendingRevenue = totalRevenue - totalPaidRevenue;
+        const paidInvoicesCount = seenPatients.filter((p) => p.isPaid).length;
+        const unpaidInvoicesCount = seenPatients.filter((p) => !p.isPaid).length;
+
         const screeningsCount = seenPatients.filter((p) => p.screening).length;
         const audiogramsCount = seenPatients.filter((p) => p.audiogram).length;
         const waxRemovalCount = seenPatients.filter((p) => p.hasEarWax).length;
@@ -262,6 +285,10 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
                 seenPatientsCount: seenPatients.length,
                 unseenPatientsCount: unseenPatients.length,
                 totalRevenue,
+                totalPaidRevenue,
+                totalPendingRevenue,
+                paidInvoicesCount,
+                unpaidInvoicesCount,
                 screeningsCount,
                 audiogramsCount,
                 waxRemovalCount,
@@ -326,6 +353,10 @@ export interface NewPatientInput {
   audiogram: boolean;
   leftEarWax: boolean;
   rightEarWax: boolean;
+  isPaid?: boolean;
+  paymentMethod?: string;
+  paymentDate?: string;
+  paymentRef?: string;
   notes?: string;
   indexOffset?: number;
 }
@@ -348,6 +379,10 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
   const leftEarWax = input.leftEarWax;
   const rightEarWax = input.rightEarWax;
   const hasEarWax = leftEarWax || rightEarWax;
+  const isPaid = seen ? Boolean(input.isPaid) : false;
+  const paymentMethod = isPaid ? input.paymentMethod || 'SumUp Card Reader' : '';
+  const paymentDate = isPaid ? normalizeDate(input.paymentDate || appointmentDate) : '';
+  const paymentRef = isPaid ? input.paymentRef || '' : '';
   const notes = input.notes || '';
   const idx = (input.indexOffset ?? 0) + 1;
 
@@ -391,6 +426,10 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
     dueDate,
     lineItems,
     totalAmount,
+    isPaid,
+    paymentMethod,
+    paymentDate,
+    paymentRef,
     leftEarFinding: clinicalDefaults.leftEarFinding,
     rightEarFinding: clinicalDefaults.rightEarFinding,
     hearingTestResult: clinicalDefaults.hearingTestResult,
@@ -428,6 +467,10 @@ export function generateCleanedCsv(
       baseRow['Report Ref'] = p.reportRef;
       baseRow['Invoice No'] = p.invoiceNo;
       baseRow['Total Amount (GBP)'] = p.seen ? `£${p.totalAmount.toFixed(2)}` : '£0.00';
+      baseRow['Payment Status'] = p.seen ? (p.isPaid ? 'Paid' : 'Unpaid') : 'N/A';
+      baseRow['Payment Method'] = p.seen && p.isPaid ? p.paymentMethod || '' : '';
+      baseRow['Payment Date'] = p.seen && p.isPaid ? p.paymentDate || '' : '';
+      baseRow['Payment Ref'] = p.seen && p.isPaid ? p.paymentRef || '' : '';
     }
 
     return baseRow;
@@ -435,4 +478,5 @@ export function generateCleanedCsv(
 
   return Papa.unparse(data);
 }
+
 

@@ -7,6 +7,7 @@ import { CareHomeSummary, PatientRow } from '../types/audiology';
 import { CareHomeReport } from '../components/print/CareHomeReport';
 import { AudiologyReport } from '../components/print/AudiologyReport';
 import { AudiologyInvoice } from '../components/print/AudiologyInvoice';
+import { generateCleanedCsv } from './csvParser';
 
 /**
  * Sanitizes a string for safe usage in file and folder names.
@@ -191,6 +192,11 @@ export async function exportBatchZipArchive(
   const summaryBlob = await renderReactNodeToPdfBlob(<CareHomeReport summary={summary} />);
   const summaryFileName = `00_${safeCareHome}_Summary_Report_${dateStr}.pdf`;
   folder.file(summaryFileName, summaryBlob);
+
+  // Bundle Portable Cleaned CSV into ZIP root
+  const cleanedCsvText = generateCleanedCsv(patients, true);
+  const cleanedCsvFileName = `00_${safeCareHome}_Cleaned_Roster_${dateStr}.csv`;
+  folder.file(cleanedCsvFileName, cleanedCsvText);
 
   // 2. Loop through seen patients
   for (let i = 0; i < seenPatients.length; i++) {

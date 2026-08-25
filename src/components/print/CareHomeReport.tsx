@@ -66,6 +66,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                   <th className="py-1.5 px-3">DOB</th>
                   <th className="py-1.5 px-3">Invoice No</th>
                   <th className="py-1.5 px-3">Services Conducted</th>
+                  <th className="py-1.5 px-3 text-center w-24">Status</th>
                   <th className="py-1.5 px-3 text-right">Amount (GBP)</th>
                 </tr>
               </thead>
@@ -84,6 +85,17 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                       <td className="py-1 px-3 text-slate-600">{p.dob}</td>
                       <td className="py-1 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
                       <td className="py-1 px-3 text-slate-700">{servicesText}</td>
+                      <td className="py-1 px-3 text-center">
+                        {p.isPaid ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            ✓ Paid
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                            Due (7d)
+                          </span>
+                        )}
+                      </td>
                       <td className="py-1 px-3 text-right font-semibold text-slate-900">£{p.totalAmount.toFixed(2)}</td>
                     </tr>
                   );
@@ -91,13 +103,26 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
               </tbody>
               <tfoot>
                 <tr className="bg-brand-soft/80 border-t-2 border-brand-navy font-bold text-brand-navy text-xs">
-                  <td colSpan={5} className="py-2 px-3 text-right uppercase tracking-wider">
-                    Care Home Grand Total:
+                  <td colSpan={6} className="py-2 px-3 text-right uppercase tracking-wider">
+                    Care Home Grand Total Billed:
                   </td>
                   <td className="py-2 px-3 text-right text-brand-navy text-sm font-extrabold">
                     £{summary.totalRevenue.toFixed(2)}
                   </td>
                 </tr>
+                {(summary.totalPaidRevenue > 0 || summary.totalPendingRevenue > 0) && (
+                  <tr className="bg-slate-100 text-[10px] text-slate-600 border-t border-slate-200">
+                    <td colSpan={7} className="py-1.5 px-3 text-right">
+                      <span className="text-emerald-800 font-semibold">
+                        Collected / Paid ({summary.paidInvoicesCount}): £{summary.totalPaidRevenue.toFixed(2)}
+                      </span>
+                      <span className="mx-2 text-slate-300">|</span>
+                      <span className="text-amber-800 font-semibold">
+                        Outstanding Balance ({summary.unpaidInvoicesCount}): £{summary.totalPendingRevenue.toFixed(2)}
+                      </span>
+                    </td>
+                  </tr>
+                )}
               </tfoot>
             </table>
           </div>

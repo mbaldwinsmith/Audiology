@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PatientRow } from '../types/audiology';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
 import { AudiogramUploader } from './AudiogramUploader';
-import { Edit3, FileText, Receipt, Trash2 } from 'lucide-react';
+import { Edit3, FileText, Receipt, Trash2, CreditCard, CheckCircle2, Clock } from 'lucide-react';
 import { exportPatientReportPdf, exportPatientInvoicePdf } from '../utils/pdfGenerator';
 
 interface PatientEditorProps {
@@ -33,6 +33,16 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
   const handleFieldChange = (field: keyof PatientRow, value: any) => {
     onUpdatePatient({ ...patient, [field]: value });
+  };
+
+  const handleTogglePaid = (isPaid: boolean) => {
+    onUpdatePatient({
+      ...patient,
+      isPaid,
+      paymentMethod: isPaid ? (patient.paymentMethod || 'SumUp Card Reader') : '',
+      paymentDate: isPaid ? (patient.paymentDate || patient.appointmentDate) : '',
+      paymentRef: isPaid ? (patient.paymentRef || '') : '',
+    });
   };
 
   const handleDelete = () => {
@@ -176,6 +186,87 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             </span>
           </button>
         </div>
+      </div>
+
+      {/* Payment & Receipt Status Section */}
+      <div className="bg-slate-50/80 border border-slate-200 rounded-lg p-3 sm:p-3.5 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <label className="font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+            <CreditCard className="w-3.5 h-3.5 text-brand-blue" />
+            <span>Invoice Payment Status &amp; Receipt</span>
+          </label>
+
+          {/* Paid / Unpaid Segmented Control */}
+          <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 shadow-xs w-fit">
+            <button
+              type="button"
+              onClick={() => handleTogglePaid(false)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition ${
+                !patient.isPaid
+                  ? 'bg-amber-100 text-amber-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Clock className="w-3 h-3 text-amber-700" />
+              <span>Due (Unpaid)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTogglePaid(true)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold transition ${
+                patient.isPaid
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CheckCircle2 className="w-3 h-3 text-emerald-200" />
+              <span>Paid in Full</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Payment Details (Shown when Paid is active) */}
+        {patient.isPaid && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-200/80">
+            <div>
+              <label className="font-semibold text-slate-700 block text-[11px] mb-1">Payment Method</label>
+              <select
+                value={patient.paymentMethod || 'SumUp Card Reader'}
+                onChange={(e) => handleFieldChange('paymentMethod', e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-brand-blue outline-none"
+              >
+                <option value="SumUp Card Reader">SumUp Card Reader</option>
+                <option value="BACS Bank Transfer">BACS Bank Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Cheque">Cheque</option>
+                <option value="Care Home Account">Care Home Account</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="font-semibold text-slate-700 block text-[11px] mb-1">Payment Date</label>
+              <input
+                type="text"
+                placeholder="DD/MM/YYYY"
+                value={patient.paymentDate || patient.appointmentDate}
+                onChange={(e) => handleFieldChange('paymentDate', e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-brand-blue outline-none"
+              >
+              </input>
+            </div>
+
+            <div>
+              <label className="font-semibold text-slate-700 block text-[11px] mb-1">Auth / Transaction Ref</label>
+              <input
+                type="text"
+                placeholder="e.g. SUMUP-839120"
+                value={patient.paymentRef || ''}
+                onChange={(e) => handleFieldChange('paymentRef', e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-brand-blue outline-none"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Audiogram Image Uploader */}

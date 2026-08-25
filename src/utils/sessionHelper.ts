@@ -15,6 +15,14 @@ export function recalculateSummary(
   const unseenPatients = patients.filter((p) => !p.seen);
 
   const totalRevenue = seenPatients.reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalPaidRevenue = seenPatients
+    .filter((p) => p.isPaid)
+    .reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalPendingRevenue = totalRevenue - totalPaidRevenue;
+
+  const paidInvoicesCount = seenPatients.filter((p) => p.isPaid).length;
+  const unpaidInvoicesCount = seenPatients.filter((p) => !p.isPaid).length;
+
   const screeningsCount = seenPatients.filter((p) => p.screening).length;
   const audiogramsCount = seenPatients.filter((p) => p.audiogram).length;
   const waxRemovalCount = seenPatients.filter((p) => p.hasEarWax).length;
@@ -30,6 +38,10 @@ export function recalculateSummary(
     seenPatientsCount: seenPatients.length,
     unseenPatientsCount: unseenPatients.length,
     totalRevenue,
+    totalPaidRevenue,
+    totalPendingRevenue,
+    paidInvoicesCount,
+    unpaidInvoicesCount,
     screeningsCount,
     audiogramsCount,
     waxRemovalCount,
@@ -37,3 +49,4 @@ export function recalculateSummary(
     unseenPatients,
   };
 }
+

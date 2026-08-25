@@ -7,6 +7,8 @@ interface AudiologyInvoiceProps {
 }
 
 export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) => {
+  const isPaid = Boolean(patient.isPaid);
+
   return (
     <div className="a4-page p-8 md:p-10 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
       <div>
@@ -15,24 +17,40 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
           <div className="flex items-center gap-3">
             <img src="./logo.png" alt="EliteSight HomeCare" className="h-12 w-12 object-contain" />
             <div>
-              <h1 className="text-2xl font-black text-brand-navy uppercase tracking-tight">INVOICE</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-black text-brand-navy uppercase tracking-tight">
+                  {isPaid ? 'INVOICE & RECEIPT' : 'INVOICE'}
+                </h1>
+                {isPaid && (
+                  <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded tracking-wider uppercase">
+                    PAID
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-slate-500 font-semibold">{COMPANY_DETAILS.name}</p>
               <p className="text-[10px] text-slate-400">Co. Reg. No: {COMPANY_DETAILS.regNo}</p>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="bg-brand-soft border border-brand-soft-dark rounded-md p-3 text-right">
+            <div className={`border rounded-md p-3 text-right ${isPaid ? 'bg-emerald-50/70 border-emerald-200' : 'bg-brand-soft border-brand-soft-dark'}`}>
               <div className="text-[10px] uppercase font-bold text-slate-500">Invoice Number</div>
               <div className="font-mono font-extrabold text-brand-navy text-sm">{patient.invoiceNo}</div>
               <div className="mt-2 text-[11px]">
                 <span className="text-slate-500">Invoice Date: </span>
                 <span className="font-semibold text-slate-800">{patient.appointmentDate}</span>
               </div>
-              <div className="text-[11px]">
-                <span className="text-amber-800 font-bold">Due Date: </span>
-                <span className="font-bold text-amber-900">{patient.dueDate}</span>
-              </div>
+              {isPaid ? (
+                <div className="text-[11px]">
+                  <span className="text-emerald-800 font-bold">Paid on: </span>
+                  <span className="font-bold text-emerald-900">{patient.paymentDate || patient.appointmentDate}</span>
+                </div>
+              ) : (
+                <div className="text-[11px]">
+                  <span className="text-amber-800 font-bold">Due Date: </span>
+                  <span className="font-bold text-amber-900">{patient.dueDate}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -105,22 +123,51 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
           </table>
         </div>
 
-        {/* Total Callout Box & Payment Instructions */}
+        {/* Total Callout Box & Payment Instructions / Receipt */}
         <div className="grid grid-cols-2 gap-4 items-start mb-6">
-          {/* Payment Terms & Instructions */}
-          <div className="border border-brand-soft-dark bg-brand-soft/50 rounded-md p-3.5">
-            <h4 className="font-bold text-brand-navy text-[11px] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <span>💳</span> Payment Instructions
-            </h4>
-            <ul className="space-y-1 text-[11px] text-slate-700">
-              <li>
-                <strong>Payment Terms:</strong> Strictly 7 days from date of visit.
-              </li>
-              <li>
-                <strong>Payment Reference:</strong> Please quote resident name <strong className="text-brand-navy">"{patient.residentFullName}"</strong> or invoice no <strong className="text-brand-navy">"{patient.invoiceNo}"</strong> with your BACS transfer.
-              </li>
-            </ul>
-          </div>
+          {/* Payment Terms or Receipt Confirmation */}
+          {isPaid ? (
+            <div className="border-2 border-emerald-500 bg-emerald-50/90 rounded-md p-3.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1.5 text-emerald-900 font-black text-xs uppercase tracking-wide mb-1">
+                  <span>✓</span> OFFICIAL PAYMENT RECEIPT
+                </div>
+                <p className="text-[11px] text-emerald-800 leading-snug">
+                  Thank you. Payment has been received and settled in full for this clinical visit.
+                </p>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-emerald-200 grid grid-cols-2 gap-2 text-[10px]">
+                <div>
+                  <span className="text-emerald-700 block font-semibold">Payment Method</span>
+                  <strong className="text-emerald-950 font-bold text-[11px]">{patient.paymentMethod || 'SumUp Card Reader'}</strong>
+                </div>
+                <div>
+                  <span className="text-emerald-700 block font-semibold">Payment Date</span>
+                  <strong className="text-emerald-950 font-bold text-[11px]">{patient.paymentDate || patient.appointmentDate}</strong>
+                </div>
+                {patient.paymentRef && (
+                  <div className="col-span-2">
+                    <span className="text-emerald-700 block font-semibold">Transaction / Auth Ref</span>
+                    <strong className="text-emerald-950 font-mono font-bold">{patient.paymentRef}</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="border border-brand-soft-dark bg-brand-soft/50 rounded-md p-3.5">
+              <h4 className="font-bold text-brand-navy text-[11px] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <span>💳</span> Payment Instructions
+              </h4>
+              <ul className="space-y-1 text-[11px] text-slate-700">
+                <li>
+                  <strong>Payment Terms:</strong> Strictly 7 days from date of visit.
+                </li>
+                <li>
+                  <strong>Payment Reference:</strong> Please quote resident name <strong className="text-brand-navy">"{patient.residentFullName}"</strong> or invoice no <strong className="text-brand-navy">"{patient.invoiceNo}"</strong> with your BACS transfer.
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Total Breakdown */}
           <div className="border border-brand-navy/20 rounded-md overflow-hidden bg-white">
@@ -133,10 +180,20 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
                 <span>VAT (0% - Medical Exemption):</span>
                 <span className="font-semibold text-slate-800">£0.00</span>
               </div>
+              {isPaid && (
+                <div className="flex justify-between text-emerald-700 font-semibold pt-1 border-t border-slate-100">
+                  <span>Amount Paid:</span>
+                  <span>-£{patient.totalAmount.toFixed(2)}</span>
+                </div>
+              )}
             </div>
-            <div className="bg-brand-navy text-white px-3.5 py-3 flex justify-between items-center">
-              <span className="font-extrabold text-xs uppercase tracking-wider text-brand-soft">TOTAL GBP DUE:</span>
-              <span className="text-lg font-black tracking-tight text-white">£{patient.totalAmount.toFixed(2)}</span>
+            <div className={`px-3.5 py-3 flex justify-between items-center text-white ${isPaid ? 'bg-emerald-800' : 'bg-brand-navy'}`}>
+              <span className="font-extrabold text-xs uppercase tracking-wider text-brand-soft">
+                {isPaid ? 'BALANCE DUE (GBP):' : 'TOTAL GBP DUE:'}
+              </span>
+              <span className="text-lg font-black tracking-tight text-white">
+                {isPaid ? '£0.00' : `£${patient.totalAmount.toFixed(2)}`}
+              </span>
             </div>
           </div>
         </div>

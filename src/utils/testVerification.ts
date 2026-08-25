@@ -115,7 +115,33 @@ export async function runSelfVerification() {
   console.assert(cleanedCsv.includes('CV-JW1205-INV11'), 'Test 7.3 failed: Cleaned CSV should include invoice no');
   console.log('✔ Phase 7 Cleaned CSV Generation Passed');
 
+  // Test 8: Payment Tracking, Receipt Mode & Two-Way CSV Roundtrip
+  const paidPatient = {
+    ...walkIn,
+    isPaid: true,
+    paymentMethod: 'SumUp Card Reader',
+    paymentDate: '24/08/2026',
+    paymentRef: 'SUMUP-839120',
+  };
+  const testPatientsWithPayment = [paidPatient, ...parseRes.patients];
+  const summaryWithPayment = recalculateSummary(testPatientsWithPayment, parseRes.careHomeSummary);
+  console.assert(summaryWithPayment?.totalPaidRevenue === 130, `Test 8.1 failed: Expected £130 paid revenue, got ${summaryWithPayment?.totalPaidRevenue}`);
+  console.assert(summaryWithPayment?.paidInvoicesCount === 1, `Test 8.2 failed: Expected 1 paid invoice, got ${summaryWithPayment?.paidInvoicesCount}`);
+
+  // Test CSV export and re-import roundtrip
+  const exportedWithPaymentCsv = generateCleanedCsv(testPatientsWithPayment, true);
+  console.assert(exportedWithPaymentCsv.includes('Payment Status'), 'Test 8.3 failed: Missing Payment Status header');
+  console.assert(exportedWithPaymentCsv.includes('SUMUP-839120'), 'Test 8.4 failed: Missing payment ref');
+
+  const reimportedRes = await parseAudiologyCsv(exportedWithPaymentCsv);
+  const reimportedPaid = reimportedRes.patients.find((p) => p.residentFullName === 'James Wilson');
+  console.assert(reimportedPaid?.isPaid === true, 'Test 8.5 failed: Re-imported patient should be marked as paid');
+  console.assert(reimportedPaid?.paymentMethod === 'SumUp Card Reader', 'Test 8.6 failed: Re-imported payment method mismatch');
+  console.assert(reimportedPaid?.paymentRef === 'SUMUP-839120', 'Test 8.7 failed: Re-imported payment ref mismatch');
+  console.log('✔ Phase 8 Payment Tracking & Two-Way CSV Persistence Passed');
+
   console.log('🎉 ALL AUDIOLOGY ENGINE VERIFICATIONS PASSED SUCCESSFULLY!');
   return true;
 }
+
 
