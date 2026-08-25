@@ -84,14 +84,14 @@ function generateDefaultClinicalFindings(
   let rightEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
 
   if (leftWax && rightWax) {
-    leftEarFinding = 'Ear wax buildup identified. Wax removal performed / recommended.';
-    rightEarFinding = 'Ear wax buildup identified. Wax removal performed / recommended.';
+    leftEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
+    rightEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
   } else if (leftWax) {
-    leftEarFinding = 'Moderate to heavy ear wax impaction noted. Wax removal performed / recommended.';
+    leftEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
     rightEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
   } else if (rightWax) {
     leftEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
-    rightEarFinding = 'Moderate to heavy ear wax impaction noted. Wax removal performed / recommended.';
+    rightEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
   }
 
   let hearingTestResult = 'Initial otoscopic examination & hearing check completed.';
