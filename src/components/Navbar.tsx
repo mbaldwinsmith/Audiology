@@ -110,8 +110,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Desktop & Tablet Actions */}
-          <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
+          {/* Desktop Actions (xl: 1280px+) */}
+          <div className="hidden xl:flex items-center gap-1.5 lg:gap-2">
             {/* Offline/Online Badge */}
             <div
               className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
@@ -126,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 <WifiOff className="w-3.5 h-3.5 text-amber-400" />
               )}
-              <span className="hidden lg:inline">{isOnline ? 'Connected' : 'Offline Mode'}</span>
+              <span>{isOnline ? 'Connected' : 'Offline Mode'}</span>
             </div>
 
             {/* Template Download */}
@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Download CSV Schema Template"
             >
               <Download className="w-3.5 h-3.5 text-brand-soft" />
-              <span className="hidden xl:inline">CSV Template</span>
+              <span>CSV Template</span>
             </button>
 
             {/* Hidden File Input */}
@@ -176,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Export cleansed CSV roster with reference IDs and billing totals"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden xl:inline">Export CSV</span>
+                <span>Export CSV</span>
               </button>
             )}
 
@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Export all individual PDFs in a ZIP archive"
               >
                 <Archive className="w-3.5 h-3.5 text-brand-soft" />
-                <span className="hidden lg:inline">Export ZIP</span>
+                <span>Export ZIP</span>
               </button>
             )}
 
@@ -212,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="GDPR Zero-Retention Reset"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden xl:inline">Reset</span>
+                <span>Reset</span>
               </button>
             )}
 
@@ -247,8 +247,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* Mobile Right Controls: Online pill + Lock button + Hamburger */}
-          <div className="flex md:hidden items-center gap-1.5">
+          {/* Tablet & Mobile Right Controls (< 1280px, including Surface Pro) */}
+          <div className="flex xl:hidden items-center gap-1.5">
+            {/* Online Status Dot */}
+            <div
+              className={`flex items-center p-1.5 rounded-full ${
+                isOnline ? 'bg-emerald-950/80 text-emerald-400' : 'bg-amber-950/80 text-amber-400'
+              }`}
+              title={isOnline ? 'Connected' : 'Offline Mode'}
+            >
+              {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+            </div>
+
+            {/* Quick Upload Button on tablet */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1 text-xs bg-brand-blue hover:bg-brand-blue-hover text-white font-medium px-2.5 py-1.5 rounded-lg shadow-sm transition"
+              title="Import CSV"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Import</span>
+            </button>
+
             {/* Quick Lock Button */}
             <button
               onClick={onLock}
@@ -258,7 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Lock className="w-4 h-4 text-amber-300" />
             </button>
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile/Tablet Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-1.5 rounded-lg bg-brand-navy-light hover:bg-brand-navy-dark text-slate-200 border border-slate-700 transition"
@@ -270,9 +290,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile/Tablet Drawer Menu (< 1280px) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-brand-navy-dark bg-brand-navy/95 backdrop-blur-md px-4 py-3 space-y-2 animate-fadeIn shadow-xl">
+        <div className="xl:hidden border-t border-brand-navy-dark bg-brand-navy/95 backdrop-blur-md px-4 py-3 space-y-2 animate-fadeIn shadow-xl max-w-full overflow-hidden">
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => {

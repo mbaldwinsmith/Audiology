@@ -89,16 +89,18 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const selectedPatient = patients.find((p) => p.id === selectedPatientId) || patients[0];
 
-  // Measure preview container for auto-fit calculation
+  // Measure preview container accurately using ResizeObserver
   useEffect(() => {
-    const updateContainerWidth = () => {
-      if (previewContainerRef.current) {
-        setContainerWidth(previewContainerRef.current.clientWidth);
+    if (!previewContainerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setContainerWidth(Math.floor(entry.contentRect.width));
+        }
       }
-    };
-    updateContainerWidth();
-    window.addEventListener('resize', updateContainerWidth);
-    return () => window.removeEventListener('resize', updateContainerWidth);
+    });
+    ro.observe(previewContainerRef.current);
+    return () => ro.disconnect();
   }, []);
 
   // Filtered patients for sidebar list
@@ -126,10 +128,13 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
     setMobilePane('preview');
   }, [activeTab]);
 
-  // Compute effective zoom scale (A4 width at 96dpi is ~794px + padding ~800px)
-  const a4BaseWidth = 800;
-  const fitScale = Math.min(1, Math.max(0.4, (containerWidth - 24) / a4BaseWidth));
+  // Compute effective zoom scale (A4 width at 96dpi is ~794px)
+  const a4BaseWidth = 794;
+  const padding = containerWidth > 640 ? 32 : 16;
+  const availableWidth = Math.max(280, containerWidth - padding);
+  const fitScale = Math.min(1.2, Math.max(0.35, availableWidth / a4BaseWidth));
   const effectiveZoom = isFitToWidth ? fitScale : zoomPercent / 100;
+  const scaledWidth = Math.round(a4BaseWidth * effectiveZoom);
 
   const handleZoomIn = () => {
     setIsFitToWidth(false);
@@ -684,7 +689,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
           {/* Document Preview Stage (Exact A4 Container with Scaled Wrapper) */}
           <div
             ref={previewContainerRef}
-            className="document-preview-stage w-full max-w-full overflow-x-auto overflow-y-visible p-2 sm:p-4 bg-slate-300/60 rounded-xl"
+            className="document-preview-stage w-full max-w-full overflow-x-auto overflow-y-visible p-2 sm:p-4 bg-slate-300/60 rounded-xl flex justify-center"
             style={{
               WebkitOverflowScrolling: 'touch',
               overscrollBehaviorX: 'contain',
@@ -692,20 +697,35 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
             }}
           >
             <div
-              className="w-full flex justify-center origin-top transition-transform duration-150"
               style={{
-                transform: `scale(${effectiveZoom})`,
-                marginBottom: effectiveZoom < 1 ? `calc((1 - ${effectiveZoom}) * -900px)` : undefined,
+                width: `${scaledWidth}px`,
+                minWidth: `${Math.min(scaledWidth, 794)}px`,
+                maxWidth: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                overflow: 'visible',
               }}
             >
-              <div className="w-[210mm] min-w-[210mm] flex flex-col items-center">
+              <div
+                className="transition-transform duration-150"
+                style={{
+                  width: `${a4BaseWidth}px`,
+                  minWidth: `${a4BaseWidth}px`,
+                  transform: `scale(${effectiveZoom})`,
+                  transformOrigin: 'top center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  marginBottom: effectiveZoom < 1 ? `calc((1 - ${effectiveZoom}) * -950px)` : undefined,
+                }}
+              >
                 {activeTab === 'care-home' && <CareHomeReport summary={summary} />}
 
                 {activeTab === 'patient-report' && selectedPatient && (
                   selectedPatient.seen ? (
                     <AudiologyReport patient={selectedPatient} />
                   ) : (
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full shadow-sm">
                       <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-2" />
                       <h3 className="text-sm font-bold text-slate-800 mb-1">Patient Not Seen</h3>
                       <p className="text-xs text-slate-600 mb-2">
@@ -722,7 +742,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                   selectedPatient.seen ? (
                     <AudiologyInvoice patient={selectedPatient} />
                   ) : (
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full">
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-10 text-center max-w-md my-8 w-full shadow-sm">
                       <Receipt className="w-10 h-10 text-slate-400 mx-auto mb-2" />
                       <h3 className="text-sm font-bold text-slate-800 mb-1">No Invoice Generated</h3>
                       <p className="text-xs text-slate-600">
