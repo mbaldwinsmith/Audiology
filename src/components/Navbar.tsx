@@ -10,7 +10,8 @@ import {
   Archive,
   Menu,
   X,
-  FileSpreadsheet,
+  Lock,
+  KeyRound,
 } from 'lucide-react';
 import { generateCsvTemplate } from '../utils/csvParser';
 
@@ -20,6 +21,8 @@ interface NavbarProps {
   onResetSession: () => void;
   onPrint: () => void;
   onExportBatchZip: () => void;
+  onLock: () => void;
+  onChangePin: () => void;
   hasData: boolean;
   totalPatientsCount: number;
 }
@@ -30,6 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onResetSession,
   onPrint,
   onExportBatchZip,
+  onLock,
+  onChangePin,
   hasData,
   totalPatientsCount,
 }) => {
@@ -100,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop & Tablet Actions */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+          <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
             {/* Offline/Online Badge */}
             <div
               className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
@@ -165,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Export all individual PDFs in a ZIP archive"
               >
                 <Archive className="w-3.5 h-3.5 text-brand-soft" />
-                <span>Export ZIP</span>
+                <span className="hidden lg:inline">Export ZIP</span>
               </button>
             )}
 
@@ -185,37 +190,49 @@ export const Navbar: React.FC<NavbarProps> = ({
             {hasData && (
               <button
                 onClick={onResetSession}
-                className="flex items-center gap-1 text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 px-2.5 py-1.5 rounded-md transition"
+                className="flex items-center gap-1 text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 px-2 py-1.5 rounded-md transition"
                 title="GDPR Zero-Retention Reset"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden xl:inline">Reset</span>
               </button>
             )}
+
+            {/* Change PIN Button */}
+            <button
+              onClick={onChangePin}
+              className="flex items-center gap-1 text-xs bg-brand-navy-light hover:bg-slate-700 text-slate-200 border border-slate-600 px-2 py-1.5 rounded-md transition"
+              title="Change Clinical PIN"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-brand-soft" />
+            </button>
+
+            {/* Lock Screen Button */}
+            <button
+              onClick={onLock}
+              className="flex items-center gap-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition"
+              title="Lock Portal Screen (Requires PIN to unlock)"
+            >
+              <Lock className="w-3.5 h-3.5 text-amber-300" />
+              <span>Lock</span>
+            </button>
           </div>
 
-          {/* Mobile Right Controls: Online pill + Hamburger button */}
-          <div className="flex md:hidden items-center gap-2">
-            {/* Compact Online Status */}
-            <div
-              className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                isOnline
-                  ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
-              }`}
+          {/* Mobile Right Controls: Online pill + Lock button + Hamburger */}
+          <div className="flex md:hidden items-center gap-1.5">
+            {/* Quick Lock Button */}
+            <button
+              onClick={onLock}
+              className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition"
+              title="Lock Screen"
             >
-              {isOnline ? (
-                <Wifi className="w-3 h-3 text-emerald-400" />
-              ) : (
-                <WifiOff className="w-3 h-3 text-amber-400" />
-              )}
-              <span>{isOnline ? 'Connected' : 'Offline'}</span>
-            </div>
+              <Lock className="w-4 h-4 text-amber-300" />
+            </button>
 
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 rounded-md bg-brand-navy-light hover:bg-brand-navy-dark text-slate-200 border border-slate-700 transition"
+              className="p-1.5 rounded-lg bg-brand-navy-light hover:bg-brand-navy-dark text-slate-200 border border-slate-700 transition"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -297,6 +314,31 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
           )}
+
+          {/* Security PIN Options in mobile menu */}
+          <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between gap-2">
+            <button
+              onClick={() => {
+                onChangePin();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg transition"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-brand-soft" />
+              <span>Change PIN</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onLock();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 p-2 rounded-lg transition"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Lock Screen</span>
+            </button>
+          </div>
         </div>
       )}
     </header>

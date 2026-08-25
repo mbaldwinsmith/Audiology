@@ -1,13 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { EmptyState } from './components/EmptyState';
 import { BatchManager } from './components/BatchManager';
 import { BatchPrintContainer } from './components/print/BatchPrintContainer';
 import { BatchExportModal, BatchExportProgressState } from './components/BatchExportModal';
+import { PinLockModal } from './components/PinLockModal';
 import { CareHomeSummary, PatientRow, ValidationError } from './types/audiology';
 import { parseAudiologyCsv } from './utils/csvParser';
 import { SAMPLE_CSV_DATA } from './utils/sampleData';
 import { exportBatchZipArchive } from './utils/pdfGenerator';
+import { INACTIVITY_TIMEOUT_MS, initializePinStorage } from './utils/security';
 
 export function App() {
   const [summary, setSummary] = useState<CareHomeSummary | null>(null);
@@ -15,6 +17,8 @@ export function App() {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [warnings, setWarnings] = useState<ValidationError[]>([]);
   const [isPrintAllMode, setIsPrintAllMode] = useState<boolean>(false);
+  const [isLocked, setIsLocked] = useState<boolean>(true);
+  const [isChangePinOpen, setIsChangePinOpen] = useState<boolean>(false);
   const [batchProgress, setBatchProgress] = useState<BatchExportProgressState>({
     isOpen: false,
     isCompleted: false,
@@ -24,6 +28,34 @@ export function App() {
     status: '',
     itemTitle: '',
   });
+
+  // Initialize PIN storage on mount
+  useEffect(() => {
+    initializePinStorage();
+  }, []);
+
+  // Inactivity auto-lock listener (locks after 5 minutes of no user interaction)
+  useEffect(() => {
+    if (isLocked) return;
+
+    let timer: number;
+
+    const resetTimer = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        setIsLocked(true);
+      }, INACTIVITY_TIMEOUT_MS);
+    };
+
+    const events = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
+    events.forEach((ev) => window.addEventListener(ev, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      window.clearTimeout(timer);
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
+    };
+  }, [isLocked]);
 
   const handleProcessCsvString = useCallback(async (csvText: string) => {
     const result = await parseAudiologyCsv(csvText);
@@ -55,6 +87,13 @@ export function App() {
       setErrors([]);
       setWarnings([]);
     }
+  }, []);
+
+  const handleWipePatientData = useCallback(() => {
+    setSummary(null);
+    setPatients([]);
+    setErrors([]);
+    setWarnings([]);
   }, []);
 
   const handleUpdatePatient = useCallback((updatedPatient: PatientRow) => {
@@ -152,6 +191,8 @@ export function App() {
         onResetSession={handleResetSession}
         onPrint={handlePrintBatch}
         onExportBatchZip={handleExportBatchZip}
+        onLock={() => setIsLocked(true)}
+        onChangePin={() => setIsChangePinOpen(true)}
         hasData={!!summary && patients.length > 0}
         totalPatientsCount={patients.length}
       />
@@ -193,6 +234,22 @@ export function App() {
       <BatchExportModal
         progress={batchProgress}
         onClose={() => setBatchProgress((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Main Lock Screen Modal */}
+      <PinLockModal
+        isOpen={isLocked}
+        onUnlock={() => setIsLocked(false)}
+        mode="unlock"
+        onSessionWipe={handleWipePatientData}
+      />
+
+      {/* Change PIN Wizard Modal */}
+      <PinLockModal
+        isOpen={isChangePinOpen}
+        onUnlock={() => {}}
+        mode="change-pin"
+        onCloseChangePin={() => setIsChangePinOpen(false)}
       />
     </div>
   );
