@@ -26,6 +26,8 @@ import {
   Loader2,
   ArrowLeft,
   MoveHorizontal,
+  UserPlus,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   exportCareHomeReportPdf,
@@ -39,9 +41,12 @@ interface BatchManagerProps {
   errors: ValidationError[];
   warnings: ValidationError[];
   onUpdatePatient: (updatedPatient: PatientRow) => void;
+  onDeletePatient: (patientId: string) => void;
+  onAddPatientClick: () => void;
   onPrintSingle: () => void;
   onPrintBatch: () => void;
   onExportBatchZip: () => void;
+  onExportCleanedCsv: () => void;
 }
 
 type ViewMode = 'care-home' | 'patient-report' | 'patient-invoice' | 'batch-print';
@@ -53,9 +58,12 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
   errors,
   warnings,
   onUpdatePatient,
+  onDeletePatient,
+  onAddPatientClick,
   onPrintSingle,
   onPrintBatch,
   onExportBatchZip,
+  onExportCleanedCsv,
 }) => {
   const [activeTab, setActiveTab] = useState<ViewMode>('care-home');
   const [mobilePane, setMobilePane] = useState<MobilePane>('preview');
@@ -225,17 +233,23 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
             </div>
           </div>
 
-          {/* Patient Selector List */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-brand-blue" />
-                Residents ({filteredPatients.length})
-              </span>
-              <div className="text-[10px] text-slate-500 font-medium hidden sm:block">
-                Tap to preview &amp; edit
+            {/* Patient Selector List */}
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-brand-blue" />
+                  Residents ({filteredPatients.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={onAddPatientClick}
+                  className="flex items-center gap-1 text-[11px] font-bold text-brand-blue hover:text-brand-navy hover:bg-brand-soft px-2 py-1 rounded-md border border-brand-blue/30 transition shadow-2xs"
+                  title="Add a new walk-in resident to this batch"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Add Resident</span>
+                </button>
               </div>
-            </div>
 
             {/* Search Input */}
             <div className="p-2.5 border-b border-slate-100">
@@ -459,8 +473,18 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                 )}
               </div>
 
-              {/* Right side actions: ZIP & Print */}
+              {/* Right side actions: Export CSV, ZIP & Print */}
               <div className="flex items-center gap-1.5">
+                <button
+                  onClick={onExportCleanedCsv}
+                  className="flex items-center gap-1 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg shadow-sm transition"
+                  title="Download normalized, cleaned CSV with all references and live changes"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Export CSV</span>
+                  <span className="sm:hidden">CSV</span>
+                </button>
+
                 <button
                   onClick={onExportBatchZip}
                   className="flex items-center gap-1 text-xs bg-brand-navy hover:bg-brand-navy-dark text-white font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg shadow-sm transition"
@@ -486,7 +510,11 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
           {/* Interactive Live Editor Drawer (if opened) */}
           {showEditor && selectedPatient && selectedPatient.seen && (
             <div className="no-print">
-              <PatientEditor patient={selectedPatient} onUpdatePatient={onUpdatePatient} />
+              <PatientEditor
+                patient={selectedPatient}
+                onUpdatePatient={onUpdatePatient}
+                onDeletePatient={onDeletePatient}
+              />
             </div>
           )}
 

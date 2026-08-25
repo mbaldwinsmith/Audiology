@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PatientRow } from '../types/audiology';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
 import { AudiogramUploader } from './AudiogramUploader';
-import { Edit3, FileText, Receipt } from 'lucide-react';
+import { Edit3, FileText, Receipt, Trash2 } from 'lucide-react';
 import { exportPatientReportPdf, exportPatientInvoicePdf } from '../utils/pdfGenerator';
 
 interface PatientEditorProps {
   patient: PatientRow;
   onUpdatePatient: (updatedPatient: PatientRow) => void;
+  onDeletePatient?: (patientId: string) => void;
 }
 
 export const PatientEditor: React.FC<PatientEditorProps> = ({
   patient,
   onUpdatePatient,
+  onDeletePatient,
 }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleToggleService = (field: 'screening' | 'audiogram' | 'leftEarWax' | 'rightEarWax') => {
     const updated = { ...patient, [field]: !patient[field] };
     updated.hasEarWax = updated.leftEarWax || updated.rightEarWax;
@@ -29,6 +33,13 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
   const handleFieldChange = (field: keyof PatientRow, value: any) => {
     onUpdatePatient({ ...patient, [field]: value });
+  };
+
+  const handleDelete = () => {
+    if (onDeletePatient) {
+      onDeletePatient(patient.id);
+      setShowDeleteConfirm(false);
+    }
   };
 
   return (
@@ -47,6 +58,39 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
           <span className="font-mono text-brand-blue font-bold">{patient.reportRef}</span>
           <span className="text-slate-300">|</span>
           <span className="font-mono text-slate-600">{patient.invoiceNo}</span>
+          {onDeletePatient && (
+            <>
+              <span className="text-slate-300">|</span>
+              {showDeleteConfirm ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="px-2 py-0.5 bg-rose-600 text-white rounded font-bold text-[10px] hover:bg-rose-700 transition"
+                  >
+                    Confirm Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] hover:bg-slate-300 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center gap-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 p-1 rounded transition"
+                  title="Delete this resident record"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
 

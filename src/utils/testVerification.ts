@@ -1,7 +1,8 @@
 import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean } from './cleaners';
 import { getCareHomeInitials, getPatientInitials, generateReportRef, generateInvoiceNo } from './hash';
 import { calculateLineItems, calculateTotalAmount } from './pricing';
-import { parseAudiologyCsv } from './csvParser';
+import { parseAudiologyCsv, createNewPatient, generateCleanedCsv } from './csvParser';
+import { recalculateSummary } from './sessionHelper';
 import { SAMPLE_CSV_DATA } from './sampleData';
 
 export async function runSelfVerification() {
@@ -69,6 +70,52 @@ export async function runSelfVerification() {
   }
   console.log('✔ Phase 4 10-Patient CSV Parsing & Unseen Exclusion Rules Passed');
 
+  // Test 5: createNewPatient (Walk-in resident)
+  const walkIn = createNewPatient({
+    careHome: 'Colne View Care Home',
+    postCode: 'CO9 2FF',
+    appointmentDate: '24/08/2026',
+    dob: '12/05/1941',
+    audiologist: 'Sarah Jenkins',
+    residentFirstName: 'James',
+    residentSurname: 'Wilson',
+    seen: true,
+    screening: true,
+    audiogram: true,
+    leftEarWax: true,
+    rightEarWax: false,
+    notes: 'Mild tinnitus reported',
+    indexOffset: 10,
+  });
+  console.assert(walkIn.residentFullName === 'James Wilson', 'Test 5.1 failed: Full name');
+  console.assert(walkIn.reportRef === 'CV-JW1205-A11', `Test 5.2 failed: Report ref ${walkIn.reportRef}`);
+  console.assert(walkIn.invoiceNo === 'CV-JW1205-INV11', `Test 5.3 failed: Invoice no ${walkIn.invoiceNo}`);
+  console.assert(walkIn.totalAmount === 130, `Test 5.4 failed: Total amount expected 130, got ${walkIn.totalAmount}`);
+  console.assert(walkIn.lineItems.length === 3, `Test 5.5 failed: Expected 3 line items, got ${walkIn.lineItems.length}`);
+  console.log('✔ Phase 5 Walk-in Patient Creation Passed');
+
+  // Test 6: recalculateSummary & Deletion
+  const updatedPatients = [...parseRes.patients, walkIn];
+  const updatedSummary = recalculateSummary(updatedPatients, parseRes.careHomeSummary);
+  console.assert(updatedSummary !== null, 'Test 6.1 failed: Summary should not be null');
+  console.assert(updatedSummary?.totalPatients === 11, `Test 6.2 failed: Expected 11 patients, got ${updatedSummary?.totalPatients}`);
+  console.assert(updatedSummary?.seenPatientsCount === 8, `Test 6.3 failed: Expected 8 seen, got ${updatedSummary?.seenPatientsCount}`);
+
+  // Test deletion
+  const afterDelete = updatedPatients.filter((p) => p.id !== walkIn.id);
+  const afterDeleteSummary = recalculateSummary(afterDelete, updatedSummary);
+  console.assert(afterDeleteSummary?.totalPatients === 10, 'Test 6.4 failed: Expected 10 patients after deletion');
+  console.assert(afterDeleteSummary?.seenPatientsCount === 7, 'Test 6.5 failed: Expected 7 seen after deletion');
+  console.log('✔ Phase 6 Centralized Summary Recalculation Passed');
+
+  // Test 7: generateCleanedCsv
+  const cleanedCsv = generateCleanedCsv(updatedPatients, true);
+  console.assert(cleanedCsv.includes('James,Wilson'), 'Test 7.1 failed: Cleaned CSV should include new patient');
+  console.assert(cleanedCsv.includes('CV-JW1205-A11'), 'Test 7.2 failed: Cleaned CSV should include report ref');
+  console.assert(cleanedCsv.includes('CV-JW1205-INV11'), 'Test 7.3 failed: Cleaned CSV should include invoice no');
+  console.log('✔ Phase 7 Cleaned CSV Generation Passed');
+
   console.log('🎉 ALL AUDIOLOGY ENGINE VERIFICATIONS PASSED SUCCESSFULLY!');
   return true;
 }
+

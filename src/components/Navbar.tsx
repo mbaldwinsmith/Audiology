@@ -12,6 +12,7 @@ import {
   X,
   Lock,
   KeyRound,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { generateCsvTemplate } from '../utils/csvParser';
 
@@ -21,6 +22,7 @@ interface NavbarProps {
   onResetSession: () => void;
   onPrint: () => void;
   onExportBatchZip: () => void;
+  onExportCleanedCsv?: () => void;
   onLock: () => void;
   onChangePin: () => void;
   hasData: boolean;
@@ -33,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onResetSession,
   onPrint,
   onExportBatchZip,
+  onExportCleanedCsv,
   onLock,
   onChangePin,
   hasData,
@@ -162,6 +165,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {/* Export Cleaned CSV */}
+            {hasData && onExportCleanedCsv && (
+              <button
+                onClick={onExportCleanedCsv}
+                className="flex items-center gap-1.5 text-xs bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition"
+                title="Export cleansed CSV roster with reference IDs and billing totals"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden xl:inline">Export CSV</span>
+              </button>
+            )}
+
             {/* Batch PDF ZIP Export */}
             {hasData && (
               <button
@@ -280,6 +295,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {hasData && (
             <div className="space-y-2 pt-1">
+              {onExportCleanedCsv && (
+                <button
+                  onClick={() => {
+                    onExportCleanedCsv();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 font-semibold p-2.5 rounded-lg shadow-sm transition"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                  <span>Export Cleaned CSV Roster</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   onExportBatchZip();

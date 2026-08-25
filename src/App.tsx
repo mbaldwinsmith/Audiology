@@ -2,14 +2,16 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { EmptyState } from './components/EmptyState';
 import { BatchManager } from './components/BatchManager';
+import { AddPatientModal } from './components/AddPatientModal';
 import { BatchPrintContainer } from './components/print/BatchPrintContainer';
 import { BatchExportModal, BatchExportProgressState } from './components/BatchExportModal';
 import { PinLockModal } from './components/PinLockModal';
 import { CareHomeSummary, PatientRow, ValidationError } from './types/audiology';
-import { parseAudiologyCsv } from './utils/csvParser';
+import { parseAudiologyCsv, generateCleanedCsv } from './utils/csvParser';
 import { SAMPLE_CSV_DATA } from './utils/sampleData';
-import { exportBatchZipArchive } from './utils/pdfGenerator';
+import { exportBatchZipArchive, sanitizeFileName, triggerBlobDownload } from './utils/pdfGenerator';
 import { INACTIVITY_TIMEOUT_MS, initializePinStorage } from './utils/security';
+import { recalculateSummary } from './utils/sessionHelper';
 
 export function App() {
   const [summary, setSummary] = useState<CareHomeSummary | null>(null);
@@ -19,6 +21,7 @@ export function App() {
   const [isPrintAllMode, setIsPrintAllMode] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(true);
   const [isChangePinOpen, setIsChangePinOpen] = useState<boolean>(false);
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState<boolean>(false);
   const [batchProgress, setBatchProgress] = useState<BatchExportProgressState>({
     isOpen: false,
     isCompleted: false,
@@ -101,35 +104,40 @@ export function App() {
       const nextPatients = prevPatients.map((p) =>
         p.id === updatedPatient.id ? updatedPatient : p
       );
-
-      // Recalculate summary stats
-      const seen = nextPatients.filter((p) => p.seen);
-      const unseen = nextPatients.filter((p) => !p.seen);
-      const totalRevenue = seen.reduce((sum, p) => sum + p.totalAmount, 0);
-      const screeningsCount = seen.filter((p) => p.screening).length;
-      const audiogramsCount = seen.filter((p) => p.audiogram).length;
-      const waxRemovalCount = seen.filter((p) => p.hasEarWax).length;
-
-      setSummary((prevSummary) =>
-        prevSummary
-          ? {
-              ...prevSummary,
-              totalPatients: nextPatients.length,
-              seenPatientsCount: seen.length,
-              unseenPatientsCount: unseen.length,
-              totalRevenue,
-              screeningsCount,
-              audiogramsCount,
-              waxRemovalCount,
-              seenPatients: seen,
-              unseenPatients: unseen,
-            }
-          : null
-      );
-
+      setSummary((prevSummary) => recalculateSummary(nextPatients, prevSummary));
       return nextPatients;
     });
   }, []);
+
+  const handleAddPatient = useCallback((newPatient: PatientRow) => {
+    setPatients((prevPatients) => {
+      const nextPatients = [...prevPatients, newPatient];
+      setSummary((prevSummary) => recalculateSummary(nextPatients, prevSummary));
+      return nextPatients;
+    });
+  }, []);
+
+  const handleDeletePatient = useCallback((patientId: string) => {
+    setPatients((prevPatients) => {
+      const nextPatients = prevPatients.filter((p) => p.id !== patientId);
+      setSummary((prevSummary) => recalculateSummary(nextPatients, prevSummary));
+      return nextPatients;
+    });
+  }, []);
+
+  const handleExportCleanedCsv = useCallback(() => {
+    if (patients.length === 0) return;
+
+    const csvContent = generateCleanedCsv(patients, true);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const safeCareHome = sanitizeFileName(summary?.careHome || 'CareHome');
+    const dateStr = summary?.appointmentDate
+      ? summary.appointmentDate.replace(/\//g, '-')
+      : 'Date';
+    const filename = `${safeCareHome}_Cleaned_Roster_${dateStr}.csv`;
+
+    triggerBlobDownload(blob, filename);
+  }, [patients, summary]);
 
   const handlePrintSingle = useCallback(() => {
     setIsPrintAllMode(false);
@@ -191,6 +199,7 @@ export function App() {
         onResetSession={handleResetSession}
         onPrint={handlePrintBatch}
         onExportBatchZip={handleExportBatchZip}
+        onExportCleanedCsv={handleExportCleanedCsv}
         onLock={() => setIsLocked(true)}
         onChangePin={() => setIsChangePinOpen(true)}
         hasData={!!summary && patients.length > 0}
@@ -216,9 +225,12 @@ export function App() {
                 errors={errors}
                 warnings={warnings}
                 onUpdatePatient={handleUpdatePatient}
+                onDeletePatient={handleDeletePatient}
+                onAddPatientClick={() => setIsAddPatientOpen(true)}
                 onPrintSingle={handlePrintSingle}
                 onPrintBatch={handlePrintBatch}
                 onExportBatchZip={handleExportBatchZip}
+                onExportCleanedCsv={handleExportCleanedCsv}
               />
             </div>
           </>
@@ -229,6 +241,15 @@ export function App() {
           />
         )}
       </main>
+
+      {/* Add Walk-in Resident Modal */}
+      <AddPatientModal
+        isOpen={isAddPatientOpen}
+        onClose={() => setIsAddPatientOpen(false)}
+        onAddPatient={handleAddPatient}
+        summary={summary}
+        existingCount={patients.length}
+      />
 
       {/* Batch ZIP Export Modal with Live Progress Tracker */}
       <BatchExportModal

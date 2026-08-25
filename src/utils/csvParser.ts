@@ -311,3 +311,128 @@ export function generateCsvTemplate(): string {
 
   return `${headers}\n${sampleRow1}\n${sampleRow2}\n${sampleRow3}\n`;
 }
+
+export interface NewPatientInput {
+  careHome: string;
+  postCode: string;
+  appointmentDate: string;
+  dob: string;
+  audiologist: string;
+  residentFirstName: string;
+  residentSurname: string;
+  seen: boolean;
+  reasonNotSeen?: string;
+  screening: boolean;
+  audiogram: boolean;
+  leftEarWax: boolean;
+  rightEarWax: boolean;
+  notes?: string;
+  indexOffset?: number;
+}
+
+/**
+ * Creates a complete PatientRow instance for newly registered / walk-in residents.
+ */
+export function createNewPatient(input: NewPatientInput): PatientRow {
+  const firstName = toTitleCase(input.residentFirstName.trim());
+  const surname = toTitleCase(input.residentSurname.trim());
+  const careHome = toTitleCase(input.careHome.trim()) || 'Care Home';
+  const postCode = input.postCode.trim().toUpperCase();
+  const appointmentDate = normalizeDate(input.appointmentDate.trim()) || normalizeDate(new Date().toISOString());
+  const dob = normalizeDate(input.dob.trim()) || '01/01/1940';
+  const audiologist = toTitleCase(input.audiologist.trim()) || 'Audiologist';
+  const seen = input.seen;
+  const reasonNotSeen = input.reasonNotSeen || (seen ? '' : 'Resident unavailable or declined visit');
+  const screening = input.screening;
+  const audiogram = input.audiogram;
+  const leftEarWax = input.leftEarWax;
+  const rightEarWax = input.rightEarWax;
+  const hasEarWax = leftEarWax || rightEarWax;
+  const notes = input.notes || '';
+  const idx = (input.indexOffset ?? 0) + 1;
+
+  const reportRef = generateReportRef(careHome, firstName, surname, dob, idx);
+  const invoiceNo = generateInvoiceNo(careHome, firstName, surname, dob, idx);
+  const dueDate = addDaysToDate(appointmentDate, PRICING.PAYMENT_TERMS_DAYS);
+
+  const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax) : [];
+  const totalAmount = calculateTotalAmount(lineItems);
+
+  const clinicalDefaults = generateDefaultClinicalFindings(
+    leftEarWax,
+    rightEarWax,
+    audiogram,
+    screening,
+    notes
+  );
+
+  return {
+    id: `pat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    careHome,
+    postCode,
+    appointmentDate,
+    dob,
+    audiologist,
+    residentFirstName: firstName,
+    residentSurname: surname,
+    residentFullName: `${firstName} ${surname}`.trim(),
+    seen,
+    reasonNotSeen,
+    screening,
+    audiogram,
+    leftEarWax,
+    rightEarWax,
+    hasEarWax,
+    notes,
+    reportRef,
+    invoiceNo,
+    careHomeInitials: getCareHomeInitials(careHome),
+    patientInitials: getPatientInitials(firstName, surname),
+    dueDate,
+    lineItems,
+    totalAmount,
+    leftEarFinding: clinicalDefaults.leftEarFinding,
+    rightEarFinding: clinicalDefaults.rightEarFinding,
+    hearingTestResult: clinicalDefaults.hearingTestResult,
+    recommendations: clinicalDefaults.recommendations,
+    nextStep: clinicalDefaults.nextStep,
+  };
+}
+
+/**
+ * Generates cleaned and standardized CSV string from live PatientRow list.
+ */
+export function generateCleanedCsv(
+  patients: PatientRow[],
+  includeExtendedColumns: boolean = true
+): string {
+  const data = patients.map((p) => {
+    const baseRow: Record<string, string | number> = {
+      'Care Home': p.careHome,
+      'Post Code': p.postCode,
+      'Appointment Date': p.appointmentDate,
+      'DOB': p.dob,
+      'Audiologist': p.audiologist,
+      'Resident First Name': p.residentFirstName,
+      'Resident Surname': p.residentSurname,
+      'Seen?': p.seen ? 'Yes' : 'No',
+      'Reason not seen': p.reasonNotSeen,
+      'Screening?': p.screening ? 'Yes' : 'No',
+      'Audiogram?': p.audiogram ? 'Yes' : 'No',
+      'Left Ear Wax?': p.leftEarWax ? 'Yes' : 'No',
+      'Right Ear Wax': p.rightEarWax ? 'Yes' : 'No',
+      'Notes': p.notes,
+    };
+
+    if (includeExtendedColumns) {
+      baseRow['Report Ref'] = p.reportRef;
+      baseRow['Invoice No'] = p.invoiceNo;
+      baseRow['Total Amount (GBP)'] = p.seen ? `£${p.totalAmount.toFixed(2)}` : '£0.00';
+    }
+
+    return baseRow;
+  });
+
+  return Papa.unparse(data);
+}
+
