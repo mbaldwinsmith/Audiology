@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CareHomeSummary, PatientRow, EarWaxLevel, EAR_WAX_LABELS } from '../types/audiology';
 import { createNewPatient } from '../utils/csvParser';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
+import { PLACEHOLDER_DOB } from '../utils/cleaners';
 import {
   UserPlus,
   X,
@@ -85,17 +86,13 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       setError('Resident Surname is required.');
       return;
     }
-    if (!dob.trim()) {
-      setError('Date of Birth (DOB) is required.');
-      return;
-    }
 
     try {
       const newPatient = createNewPatient({
         careHome,
         postCode,
         appointmentDate,
-        dob,
+        dob: dob.trim() || PLACEHOLDER_DOB,
         audiologist,
         residentFirstName: firstName,
         residentSurname: surname,
@@ -216,13 +213,12 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
               <div className="sm:col-span-2">
                 <label className="block text-slate-700 font-semibold mb-1">
-                  Date of Birth (DOB) <span className="text-rose-500">*</span>
+                  Date of Birth (DOB) <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
                 </label>
                 <div className="relative">
                   <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   <input
                     type="text"
-                    required
                     placeholder="DD/MM/YYYY (e.g. 14/03/1938)"
                     value={dob}
                     onChange={(e) => setDob(e.target.value)}

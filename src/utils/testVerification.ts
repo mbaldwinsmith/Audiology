@@ -1,4 +1,13 @@
-import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean, parseEarWaxLevel } from './cleaners';
+import {
+  toTitleCase,
+  normalizeDate,
+  addDaysToDate,
+  parseBoolean,
+  parseEarWaxLevel,
+  PLACEHOLDER_DOB,
+  isPlaceholderDob,
+  formatDobDisplay,
+} from './cleaners';
 import { getCareHomeInitials, getPatientInitials, generateReportRef, generateInvoiceNo } from './hash';
 import { calculateLineItems, calculateTotalAmount } from './pricing';
 import { parseAudiologyCsv, createNewPatient, generateCleanedCsv } from './csvParser';
@@ -14,7 +23,7 @@ import {
 export async function runSelfVerification() {
   console.log('=== ELITESIGHT AUDIOLOGY VERIFICATION RUN ===');
 
-  // Test 1: Cleaners & Ear Wax Level Parser
+  // Test 1: Cleaners, Ear Wax Level Parser & Placeholder DOB
   console.assert(toTitleCase('melanie dudman') === 'Melanie Dudman', 'Test 1.1 failed: TitleCase simple');
   console.assert(toTitleCase("O'CONNOR") === "O'Connor", 'Test 1.2 failed: TitleCase apostrophe');
   console.assert(toTitleCase('smith-jones') === 'Smith-Jones', 'Test 1.3 failed: TitleCase hyphen');
@@ -31,9 +40,14 @@ export async function runSelfVerification() {
   console.assert(parseEarWaxLevel('Minor') === 1, 'Test 1.14 failed: Ear wax level Minor');
   console.assert(parseEarWaxLevel('Moderate') === 2, 'Test 1.15 failed: Ear wax level Moderate');
   console.assert(parseEarWaxLevel('Severe') === 3, 'Test 1.16 failed: Ear wax level Severe');
-  console.log('✔ Phase 1 Cleaners & Ear Wax Normalizers Passed');
+  console.assert(PLACEHOLDER_DOB === '01/01/1906', 'Test 1.17 failed: PLACEHOLDER_DOB must be 01/01/1906');
+  console.assert(isPlaceholderDob('01/01/1906') === true, 'Test 1.18 failed: isPlaceholderDob');
+  console.assert(isPlaceholderDob('14/03/1938') === false, 'Test 1.19 failed: isPlaceholderDob real date');
+  console.assert(formatDobDisplay('01/01/1906') === '', 'Test 1.20 failed: formatDobDisplay placeholder must be blank');
+  console.assert(formatDobDisplay('14/03/1938') === '14/03/1938', 'Test 1.21 failed: formatDobDisplay real date');
+  console.log('✔ Phase 1 Cleaners, Ear Wax & DOB Placeholder System Passed');
 
-  // Test 2: Deterministic Hash
+  // Test 2: Deterministic Hash (including placeholder DOB 01/01/1906)
   const chInitials = getCareHomeInitials('Colne View Care Home');
   console.assert(chInitials === 'CV', `Test 2.1 failed: Expected 'CV', got '${chInitials}'`);
 
@@ -45,6 +59,10 @@ export async function runSelfVerification() {
 
   const invoiceNo = generateInvoiceNo('Colne View Care Home', 'Melanie', 'Dudman', '14/03/1938', 1);
   console.assert(invoiceNo === 'CV-MD1403-INV1', `Test 2.4 failed: Expected 'CV-MD1403-INV1', got '${invoiceNo}'`);
+
+  // Reference for resident with placeholder DOB
+  const noDobRef = generateReportRef('Colne View Care Home', 'John', 'Smith', PLACEHOLDER_DOB, 1);
+  console.assert(noDobRef === 'CV-JS0101-A1', `Test 2.5 failed: Expected 'CV-JS0101-A1', got '${noDobRef}'`);
   console.log('✔ Phase 2 Deterministic Hashes & References Passed');
 
   // Test 3: Pricing calculations (with 0..3 ear wax levels)

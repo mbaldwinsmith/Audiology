@@ -7,7 +7,14 @@ import {
   ParseResult,
   EarWaxLevel,
 } from '../types/audiology';
-import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean, parseEarWaxLevel } from './cleaners';
+import {
+  toTitleCase,
+  normalizeDate,
+  addDaysToDate,
+  parseBoolean,
+  parseEarWaxLevel,
+  PLACEHOLDER_DOB,
+} from './cleaners';
 import { generateReportRef, generateInvoiceNo, getCareHomeInitials, getPatientInitials } from './hash';
 import { calculateLineItems, calculateTotalAmount } from './pricing';
 import { CSV_REQUIRED_COLUMNS, PRICING } from './constants';
@@ -203,7 +210,7 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const careHome = toTitleCase(careHomeRaw) || careHomeName || 'Care Home';
           const postCode = postCodeRaw.toUpperCase() || careHomePostCode || '';
           const appointmentDate = normalizeDate(appDateRaw) || careHomeAppointmentDate || normalizeDate(new Date().toISOString());
-          const dob = normalizeDate(dobRaw) || '01/01/1940';
+          const dob = normalizeDate(dobRaw) || PLACEHOLDER_DOB;
           const audiologist = toTitleCase(audiologistRaw) || careHomeAudiologist || 'Audiologist';
 
           // Set primary summary metadata from first valid row if not yet set
@@ -385,7 +392,7 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
   const careHome = toTitleCase(input.careHome.trim()) || 'Care Home';
   const postCode = input.postCode.trim().toUpperCase();
   const appointmentDate = normalizeDate(input.appointmentDate.trim()) || normalizeDate(new Date().toISOString());
-  const dob = normalizeDate(input.dob.trim()) || '01/01/1940';
+  const dob = normalizeDate(input.dob.trim()) || PLACEHOLDER_DOB;
   const audiologist = toTitleCase(input.audiologist.trim()) || 'Audiologist';
   const seen = input.seen;
   const reasonNotSeen = input.reasonNotSeen || (seen ? '' : 'Resident unavailable or declined visit');

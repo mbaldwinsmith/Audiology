@@ -1,6 +1,7 @@
 import React from 'react';
 import { CareHomeSummary } from '../../types/audiology';
 import { COMPANY_DETAILS } from '../../utils/constants';
+import { formatDobDisplay } from '../../utils/cleaners';
 
 interface CareHomeReportProps {
   summary: CareHomeSummary;
@@ -90,7 +91,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                       <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                         <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
                         <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                        <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                        <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
                         <td className="py-1.5 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
                         <td className="py-1.5 px-3 text-slate-700 font-medium">{servicesText}</td>
                         <td className="py-1.5 px-3 text-slate-600">
@@ -144,7 +145,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                       <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                      <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                      <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
                       <td className="py-1.5 px-3 text-slate-600">
                         {p.hearingTestResult || 'Routine check clear. Ear canals healthy.'}
                       </td>
@@ -185,7 +186,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <tr key={p.id} className="bg-amber-50/20">
                       <td className="py-1.5 px-3 text-amber-700/60 font-mono">{idx + 1}</td>
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                      <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
+                      <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
                       <td className="py-1.5 px-3 text-amber-950 font-medium">
                         {p.reasonNotSeen || 'Not seen during scheduled visit - reschedule requested'}
                       </td>

@@ -9,6 +9,7 @@ import { AudiologyReport } from './print/AudiologyReport';
 import { AudiologyInvoice } from './print/AudiologyInvoice';
 import { BatchPrintContainer } from './print/BatchPrintContainer';
 import { PatientEditor } from './PatientEditor';
+import { formatDobDisplay } from '../utils/cleaners';
 import {
   Building,
   FileText,
@@ -403,7 +404,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                         )}
                       </div>
                       <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                        {p.reportRef} • DOB: {p.dob}
+                        {p.reportRef}{formatDobDisplay(p.dob) ? ` • DOB: ${formatDobDisplay(p.dob)}` : ''}
                       </div>
                       {p.seen && (
                         <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">

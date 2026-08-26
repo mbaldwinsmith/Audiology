@@ -1,6 +1,7 @@
 import React from 'react';
 import { PatientRow } from '../../types/audiology';
 import { COMPANY_DETAILS } from '../../utils/constants';
+import { formatDobDisplay } from '../../utils/cleaners';
 
 interface AudiologyInvoiceProps {
   patient: PatientRow;
@@ -65,7 +66,9 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
             <div className="font-bold text-slate-900 text-sm">{patient.residentFullName}</div>
             <div className="text-slate-600 mt-1">Care Home: <span className="font-medium text-slate-800">{patient.careHome}</span></div>
             <div className="text-slate-600">Location: <span className="font-medium text-slate-800">{patient.postCode || 'Local Care Residence'}</span></div>
-            <div className="text-slate-500 text-[10px] mt-1">DOB: {patient.dob}</div>
+            {formatDobDisplay(patient.dob) && (
+              <div className="text-slate-500 text-[10px] mt-1">DOB: {formatDobDisplay(patient.dob)}</div>
+            )}
           </div>
 
           {/* Service Provider Info */}

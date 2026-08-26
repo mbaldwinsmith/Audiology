@@ -53,6 +53,29 @@ export function normalizeDate(dateInput?: string | null): string {
 }
 
 /**
+ * Standard system placeholder date of birth used for internal code integrity when DOB is missing.
+ */
+export const PLACEHOLDER_DOB = '01/01/1906';
+
+/**
+ * Checks if a given date of birth is the system placeholder or blank.
+ */
+export function isPlaceholderDob(dob?: string | null): boolean {
+  if (!dob) return true;
+  const clean = dob.trim();
+  return clean === '01/01/1906' || clean === '1906-01-01' || clean === '01011906';
+}
+
+/**
+ * Formats a date of birth for UI and document display.
+ * Returns blank empty string if the DOB is the system placeholder (01/01/1906) or missing.
+ */
+export function formatDobDisplay(dob?: string | null): string {
+  if (!dob || isPlaceholderDob(dob)) return '';
+  return dob;
+}
+
+/**
  * Adds a number of days to a DD/MM/YYYY date string and returns the new date in DD/MM/YYYY format.
  */
 export function addDaysToDate(dateStr: string, days: number): string {

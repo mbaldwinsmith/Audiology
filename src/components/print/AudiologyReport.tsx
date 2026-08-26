@@ -1,6 +1,7 @@
 import React from 'react';
 import { PatientRow } from '../../types/audiology';
 import { COMPANY_DETAILS } from '../../utils/constants';
+import { formatDobDisplay } from '../../utils/cleaners';
 
 interface AudiologyReportProps {
   patient: PatientRow;
@@ -56,7 +57,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Date of Birth</span>
-              <span className="font-semibold text-slate-700">{patient.dob}</span>
+              <span className="font-semibold text-slate-700">{formatDobDisplay(patient.dob)}</span>
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Visit Date</span>
