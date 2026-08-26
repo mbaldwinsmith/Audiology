@@ -150,7 +150,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                         {p.hearingTestResult || 'Routine check clear. Ear canals healthy.'}
                       </td>
                       <td className="py-1.5 px-3 text-emerald-700 font-medium">
-                        ✓ All Clear / Routine 12-Month Review
+                        ✓ All Clear
                       </td>
                     </tr>
                   ))}

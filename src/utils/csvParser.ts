@@ -112,14 +112,14 @@ function generateDefaultClinicalFindings(
   }
 
   let recommendations = 'Routine annual ear and hearing check recommended.';
-  let nextStep = 'All Clear / Routine 12-Month Review';
+  let nextStep = 'All Clear';
 
   if (leftWax >= 2 || rightWax >= 2) {
     recommendations = 'Please apply 2 to 3 drops of olive oil (or Earol spray) twice a day for 14 days to soften the wax before gentle cleaning.';
     nextStep = '2-Week Olive Oil Drops / Wax Removal';
   } else if (leftWax === 1 || rightWax === 1) {
     recommendations = 'Small amount of normal wax present. Normal ear hygiene advised; no wax removal needed.';
-    nextStep = audiogram ? 'Hearing Aid Check & Discussion' : 'All Clear / Routine 12-Month Review';
+    nextStep = audiogram ? 'Hearing Aid Check & Discussion' : 'All Clear';
   } else if (audiogram) {
     recommendations = 'Discussed hearing results and helpful communication tips with resident and care team.';
     nextStep = 'Hearing Aid Check & Discussion';
