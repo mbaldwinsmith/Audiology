@@ -16,7 +16,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
   return (
     <div className="font-sans text-slate-800 text-xs">
       {/* PAGE 1: Resident Ear & Hearing Summary */}
-      <div className="a4-page p-8 md:p-10 flex flex-col justify-between leading-relaxed">
+      <div className="a4-page p-8 flex flex-col justify-between leading-relaxed">
         <div>
           {/* Header */}
           <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3.5 mb-4.5">
@@ -293,7 +293,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
 
       {/* PAGE 2: Optional Full Hearing Test Chart Container */}
       {patient.audiogramImageUrl && (
-        <div className="a4-page p-8 md:p-10 flex flex-col justify-between page-break leading-relaxed">
+        <div className="a4-page p-8 flex flex-col justify-between page-break leading-relaxed">
           <div>
             {/* Header */}
             <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3.5 mb-4.5">

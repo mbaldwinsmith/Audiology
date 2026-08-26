@@ -11,7 +11,7 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
   const isPaid = Boolean(patient.isPaid);
 
   return (
-    <div className="a4-page p-8 md:p-10 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
+    <div className="a4-page p-8 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
       <div>
         {/* Invoice Header */}
         <div className="flex items-start justify-between border-b-2 border-brand-navy pb-5 mb-6">

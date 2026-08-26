@@ -37,6 +37,15 @@ export function triggerBlobDownload(blob: Blob, filename: string): void {
  * Converts a mounted DOM element (containing one or more .a4-page containers) into a jsPDF A4 Document Blob.
  */
 export async function convertElementToPdfBlob(element: HTMLElement): Promise<Blob> {
+  // Ensure custom and web fonts are fully loaded before capturing
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Ignore font readiness errors
+    }
+  }
+
   const pageElements = Array.from(element.querySelectorAll<HTMLElement>('.a4-page'));
   const targets = pageElements.length > 0 ? pageElements : [element];
 
@@ -47,26 +56,56 @@ export async function convertElementToPdfBlob(element: HTMLElement): Promise<Blo
     compress: true,
   });
 
+  // Standard A4 pixel dimensions at 96 DPI
+  const a4WidthPx = 794;
+  const a4HeightPx = 1123;
+
   for (let i = 0; i < targets.length; i++) {
     const pageEl = targets[i];
 
-    // Capture at high resolution (scale: 2 is 150-200+ DPI crisp text)
+    // Capture at high resolution with exact 794px viewport width
     const canvas = await html2canvas(pageEl, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: 1024,
+      width: a4WidthPx,
+      height: a4HeightPx,
+      windowWidth: a4WidthPx,
+      windowHeight: a4HeightPx,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      onclone: (_clonedDoc, clonedEl) => {
+        // Enforce exact A4 bounds on cloned element
+        const page = (clonedEl.classList.contains('a4-page') ? clonedEl : clonedEl.querySelector('.a4-page')) as HTMLElement || clonedEl;
+        if (page) {
+          page.style.width = '794px';
+          page.style.minWidth = '794px';
+          page.style.maxWidth = '794px';
+          page.style.height = '1123px';
+          page.style.minHeight = '1123px';
+          page.style.maxHeight = '1123px';
+          page.style.boxSizing = 'border-box';
+          page.style.margin = '0';
+          page.style.transform = 'none';
+          page.style.boxShadow = 'none';
+          page.style.position = 'relative';
+          page.style.left = '0';
+          page.style.top = '0';
+        }
+      },
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
 
     if (i > 0) {
       pdf.addPage('a4', 'portrait');
     }
 
-    // A4 dimensions in mm: 210 x 297
+    // Exact A4 dimensions in mm: 210 x 297
     pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
   }
 
@@ -74,25 +113,35 @@ export async function convertElementToPdfBlob(element: HTMLElement): Promise<Blo
 }
 
 /**
- * Renders a React node into a temporary offscreen DOM element, captures it as a PDF Blob, and unmounts it cleanly.
+ * Renders a React node into a temporary DOM element, captures it as a PDF Blob, and unmounts it cleanly.
  */
 export async function renderReactNodeToPdfBlob(node: React.ReactElement): Promise<Blob> {
   const container = document.createElement('div');
   container.style.position = 'fixed';
-  container.style.left = '-9999px';
+  container.style.left = '0';
   container.style.top = '0';
-  container.style.width = '210mm';
+  container.style.width = '794px';
+  container.style.height = '1123px';
   container.style.background = '#ffffff';
   container.style.zIndex = '-9999';
+  container.style.opacity = '0';
   container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
 
   document.body.appendChild(container);
 
   const root = ReactDOM.createRoot(container);
   root.render(node);
 
-  // Allow React to mount, CSS to layout, and images/fonts to paint
-  await new Promise((resolve) => setTimeout(resolve, 150));
+  // Allow React to mount, CSS to layout, and fonts & images to paint
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Ignore
+    }
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250));
 
   try {
     const blob = await convertElementToPdfBlob(container);

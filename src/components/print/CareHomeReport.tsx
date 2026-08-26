@@ -19,7 +19,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
   );
 
   return (
-    <div className="a4-page p-8 md:p-10 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
+    <div className="a4-page p-8 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
       <div>
         {/* Document Header */}
         <div className="flex items-center justify-between border-b-2 border-brand-navy pb-4 mb-5">
