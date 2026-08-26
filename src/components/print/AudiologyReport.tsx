@@ -9,7 +9,7 @@ interface AudiologyReportProps {
 export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => {
   return (
     <div className="font-sans text-slate-800 text-xs">
-      {/* PAGE 1: Clinical Ear & Hearing Summary */}
+      {/* PAGE 1: Resident Ear & Hearing Summary */}
       <div className="a4-page p-8 md:p-10 flex flex-col justify-between leading-relaxed">
         <div>
           {/* Header */}
@@ -21,7 +21,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   Ear &amp; Hearing Care Summary
                 </h1>
                 <p className="text-[10px] text-slate-500 font-semibold tracking-wider">
-                  CLINICAL AUDIOLOGICAL ASSESSMENT
+                  RESIDENT EAR &amp; HEARING RECORD
                 </p>
               </div>
             </div>
@@ -39,7 +39,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
               <strong className="text-brand-navy font-semibold">{patient.careHome}</strong>
             </div>
             <div>
-              <span className="text-slate-500">Completed Date: </span>
+              <span className="text-slate-500">Visit Date: </span>
               <strong className="text-brand-navy font-semibold">{patient.appointmentDate}</strong>
             </div>
             <div>
@@ -67,7 +67,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
               <span className="font-mono text-brand-blue font-semibold">{patient.reportRef}</span>
             </div>
             <div className="col-span-2">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Next Clinical Step</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Next Step</span>
               <span className="inline-flex items-center gap-1.5 font-semibold text-brand-navy">
                 <span className="w-2 h-2 rounded-full bg-brand-blue"></span>
                 {patient.nextStep || 'Routine review in 12 months'}
@@ -78,8 +78,8 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           {/* Ear Check Findings (Left vs Right) */}
           <div className="mb-4">
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-              <span>Ear Examination Findings</span>
-              <span className="text-[10px] font-normal text-brand-soft">Direct Visualization</span>
+              <span>Ear Check Results</span>
+              <span className="text-[10px] font-normal text-brand-soft">Visual Check</span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white grid grid-cols-2 gap-3">
               {/* Left Ear */}
@@ -122,14 +122,14 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
-                        LEFT EAR (AS)
+                        LEFT EAR
                       </span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
                         {label}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-700 leading-snug">
-                      {patient.leftEarFinding || 'External canal and tympanic membrane inspected.'}
+                      {patient.leftEarFinding || 'Ear canal and eardrum checked.'}
                     </p>
                   </div>
                 );
@@ -175,14 +175,14 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
-                        RIGHT EAR (AD)
+                        RIGHT EAR
                       </span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
                         {label}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-700 leading-snug">
-                      {patient.rightEarFinding || 'External canal and tympanic membrane inspected.'}
+                      {patient.rightEarFinding || 'Ear canal and eardrum checked.'}
                     </p>
                   </div>
                 );
@@ -195,12 +195,12 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Hearing Assessment</span>
               <span className="text-[10px] font-normal text-brand-soft">
-                {patient.audiogram ? 'Diagnostic Full Hearing Test Completed' : patient.screening ? 'Routine Screening' : 'Otoscopy Only'}
+                {patient.audiogram ? 'Full Hearing Test Completed' : patient.screening ? 'Routine Hearing Screening' : 'Ear Check Only'}
               </span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white">
               <p className="text-[11px] text-slate-800 font-medium mb-2">
-                {patient.hearingTestResult || 'Hearing functionality and response evaluated during consultation.'}
+                {patient.hearingTestResult || 'Hearing and sound responses checked during visit.'}
               </p>
               <div className="flex items-center gap-4 text-[11px]">
                 <div className="flex items-center gap-1.5">
@@ -214,12 +214,12 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                     <span className="w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold bg-emerald-600 text-white">
                       ✓
                     </span>
-                    <span className="text-slate-700 font-medium">Pure-Tone Diagnostic Full Hearing Test</span>
+                    <span className="text-slate-700 font-medium">Full Hearing Test</span>
                   </div>
                 )}
                 {patient.audiogramImageUrl && (
                   <span className="text-brand-blue font-semibold text-[10px] ml-auto">
-                    * Attached Full Hearing Test Chart on Page 2
+                    * Hearing Chart Attached on Page 2
                   </span>
                 )}
               </div>
@@ -229,15 +229,15 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           {/* Summary & Recommendations */}
           <div className="mb-4">
             <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider">
-              <span>Clinical Summary &amp; Recommendations</span>
+              <span>Summary &amp; Advice for Care Staff</span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white">
               <p className="text-[11px] text-slate-700 leading-relaxed mb-2">
-                {patient.recommendations || 'Patient comfortable. Follow-up plan established with care staff.'}
+                {patient.recommendations || 'Resident comfortable. Care plan discussed with staff.'}
               </p>
               {patient.notes && (
                 <div className="bg-slate-50 border-l-2 border-brand-blue p-2 text-[10px] text-slate-600 italic">
-                  <strong>Clinical Note:</strong> {patient.notes}
+                  <strong>Note:</strong> {patient.notes}
                 </div>
               )}
             </div>
@@ -248,14 +248,14 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             <div className="mb-4 border-2 border-amber-300 bg-amber-50/80 rounded-md p-3">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-amber-800 font-extrabold text-xs uppercase tracking-wide">
-                  ⚠️ 2-Week Olive Oil Earwax Softening Regimen
+                  ⚠️ 2-Week Olive Oil Ear Drops Routine
                 </span>
                 <span className="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-bold">
-                  Care Staff Action Required
+                  Care Staff Action
                 </span>
               </div>
               <p className="text-[11px] text-amber-950 leading-snug">
-                For optimal, safe ear wax removal, administer <strong>2 to 3 drops of medical-grade olive oil (Earol or pipette drops)</strong> into the affected ear(s) <strong>twice daily for 14 consecutive days</strong> prior to secondary instrumentation / irrigation. Do not insert cotton buds into ear canals.
+                To gently soften the ear wax before removal, please put <strong>2 to 3 drops of medicinal olive oil (or Earol spray)</strong> into the affected ear(s) <strong>twice a day for 14 days</strong>. Please do not use cotton buds in the ears.
               </p>
             </div>
           )}
@@ -282,10 +282,10 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 <img src="./logo.png" alt="EliteSight HomeCare" className="h-10 w-10 object-contain" />
                 <div>
                   <h1 className="text-base font-extrabold text-brand-navy uppercase tracking-tight">
-                    Pure-Tone Full Hearing Test Chart
+                    Hearing Test Chart
                   </h1>
                   <p className="text-[10px] text-slate-500 font-semibold">
-                    CLINICAL DIAGNOSTIC ATTACHMENT
+                    HEARING ASSESSMENT ATTACHMENT
                   </p>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 className="max-h-[440px] max-w-full object-contain rounded shadow-sm"
               />
               <p className="text-[10px] text-slate-400 mt-3 italic">
-                Diagnostic full hearing test recording hearing thresholds (dB HL vs Frequency Hz)
+                Hearing chart showing hearing levels across sound frequencies
               </p>
             </div>
           </div>
@@ -314,7 +314,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
               <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span> | Reg No: {COMPANY_DETAILS.regNo}
             </div>
             <div className="font-medium text-slate-600">
-              Page 2 of 2 (Diagnostic Attachment)
+              Page 2 of 2 (Hearing Chart Attachment)
             </div>
           </div>
         </div>

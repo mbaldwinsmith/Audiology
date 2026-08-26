@@ -25,7 +25,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
           <div className="flex items-center gap-3">
             <img src="./logo.png" alt="EliteSight HomeCare" className="h-12 w-12 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-brand-navy uppercase tracking-tight">Care Home Audiology Report</h1>
+              <h1 className="text-xl font-bold text-brand-navy uppercase tracking-tight">Care Home Ear &amp; Hearing Visit Summary</h1>
               <p className="text-[11px] text-slate-500 font-medium">{COMPANY_DETAILS.subtitle}</p>
             </div>
           </div>
@@ -37,10 +37,10 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
           </div>
         </div>
 
-        {/* Top Clinical KPI Ribbon (Non-Financial) */}
+        {/* Top Summary KPI Ribbon */}
         <div className="grid grid-cols-4 gap-3 mb-5">
           <div className="bg-brand-soft border border-brand-soft-dark rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-brand-navy">Total Patients</div>
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-brand-navy">Total Residents</div>
             <div className="text-lg font-bold text-brand-navy mt-0.5">{summary.totalPatients}</div>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-md p-2.5 text-center">
@@ -48,19 +48,19 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
             <div className="text-lg font-bold text-blue-700 mt-0.5">{treatmentPatients.length}</div>
           </div>
           <div className="bg-emerald-50 border border-emerald-200 rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-800">No Action Needed</div>
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-800">All Clear (No Action)</div>
             <div className="text-lg font-bold text-emerald-700 mt-0.5">{noFurtherTreatmentPatients.length}</div>
           </div>
           <div className="bg-amber-50 border border-amber-200 rounded-md p-2.5 text-center">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">Patients Not Seen</div>
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-amber-800">Residents Not Seen</div>
             <div className="text-lg font-bold text-amber-700 mt-0.5">{summary.unseenPatientsCount}</div>
           </div>
         </div>
 
-        {/* SECTION 1: Invoices & Further Treatment */}
+        {/* SECTION 1: Treatment Needed & Invoices */}
         <div className="mb-5">
           <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 1: Invoices &amp; Further Treatment</h2>
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 1: Treatment Needed &amp; Invoices</h2>
             <span className="text-[10px] font-medium text-brand-soft">{treatmentPatients.length} Resident(s)</span>
           </div>
           <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
@@ -72,8 +72,8 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <th className="py-1.5 px-3">Resident Name</th>
                     <th className="py-1.5 px-3">DOB</th>
                     <th className="py-1.5 px-3">Invoice No</th>
-                    <th className="py-1.5 px-3">Services Conducted</th>
-                    <th className="py-1.5 px-3">Clinical Next Step / Regimen</th>
+                    <th className="py-1.5 px-3">Services Provided</th>
+                    <th className="py-1.5 px-3">Next Step / Advice</th>
                     <th className="py-1.5 px-3 text-center w-20">Status</th>
                     <th className="py-1.5 px-3 text-right">Amount</th>
                   </tr>
@@ -83,8 +83,8 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     const services: string[] = [];
                     if (p.hasEarWax) services.push('Wax Removal (£80)');
                     if (p.audiogram) services.push('Full Hearing Test (£50)');
-                    if (p.screening && !p.hasEarWax && !p.audiogram) services.push('Screening (Free)');
-                    const servicesText = services.length > 0 ? services.join(', ') : 'Audiological Consultation';
+                    if (p.screening && !p.hasEarWax && !p.audiogram) services.push('Hearing Screening (Free)');
+                    const servicesText = services.length > 0 ? services.join(', ') : 'Ear & Hearing Visit';
 
                     return (
                       <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
@@ -94,7 +94,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                         <td className="py-1.5 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
                         <td className="py-1.5 px-3 text-slate-700 font-medium">{servicesText}</td>
                         <td className="py-1.5 px-3 text-slate-600">
-                          {p.nextStep || (p.hasEarWax ? '2-Week Olive Oil Regimen / Follow-up' : 'Hearing Aid Review')}
+                          {p.nextStep || (p.hasEarWax ? '2-Week Olive Oil Drops / Wax Removal' : 'Hearing Aid Check')}
                         </td>
                         <td className="py-1.5 px-3 text-center">
                           {p.isPaid ? (
@@ -121,10 +121,10 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
           </div>
         </div>
 
-        {/* SECTION 2: No Further Treatment */}
+        {/* SECTION 2: All Clear (No Further Action Needed) */}
         <div className="mb-5">
           <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 2: No Further Treatment</h2>
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 2: All Clear (No Action Needed)</h2>
             <span className="text-[10px] font-medium text-brand-soft">{noFurtherTreatmentPatients.length} Resident(s)</span>
           </div>
           <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
@@ -135,8 +135,8 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <th className="py-1.5 px-3 w-8">#</th>
                     <th className="py-1.5 px-3">Resident Name</th>
                     <th className="py-1.5 px-3">DOB</th>
-                    <th className="py-1.5 px-3">Assessment Finding</th>
-                    <th className="py-1.5 px-3">Clinical Status</th>
+                    <th className="py-1.5 px-3">Check Result</th>
+                    <th className="py-1.5 px-3">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -146,10 +146,10 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
                       <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
                       <td className="py-1.5 px-3 text-slate-600">
-                        {p.hearingTestResult || 'Routine screening clear. Normal otoscopy.'}
+                        {p.hearingTestResult || 'Routine check clear. Ear canals healthy.'}
                       </td>
                       <td className="py-1.5 px-3 text-emerald-700 font-medium">
-                        ✓ Discharged / Routine 12-Month Recall
+                        ✓ All Clear / Routine 12-Month Review
                       </td>
                     </tr>
                   ))}
@@ -157,16 +157,16 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
               </table>
             ) : (
               <div className="p-3 text-center text-slate-500 italic">
-                All assessed residents required clinical follow-up or treatment.
+                All assessed residents required follow-up or treatment.
               </div>
             )}
           </div>
         </div>
 
-        {/* SECTION 3: Patients Not Seen */}
+        {/* SECTION 3: Residents Not Seen */}
         <div className="mb-4">
           <div className="flex items-center justify-between bg-brand-navy text-white px-3 py-1.5 rounded-t-md">
-            <h2 className="font-bold text-xs uppercase tracking-wider">Section 3: Patients Not Seen</h2>
+            <h2 className="font-bold text-xs uppercase tracking-wider">Section 3: Residents Not Seen</h2>
             <span className="text-[10px] font-medium text-brand-soft">{summary.unseenPatients.length} Resident(s)</span>
           </div>
           <div className="border border-t-0 border-slate-200 rounded-b-md overflow-hidden bg-white">
@@ -177,7 +177,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <th className="py-1.5 px-3 w-8">#</th>
                     <th className="py-1.5 px-3">Resident Name</th>
                     <th className="py-1.5 px-3">DOB</th>
-                    <th className="py-1.5 px-3">Reason Not Seen / Action Note</th>
+                    <th className="py-1.5 px-3">Reason Not Seen / Notes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-amber-100">
@@ -187,7 +187,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
                       <td className="py-1.5 px-3 text-slate-600">{p.dob}</td>
                       <td className="py-1.5 px-3 text-amber-950 font-medium">
-                        {p.reasonNotSeen || 'Not seen during scheduled round - reschedule requested'}
+                        {p.reasonNotSeen || 'Not seen during scheduled visit - reschedule requested'}
                       </td>
                     </tr>
                   ))}

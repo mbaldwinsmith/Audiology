@@ -146,7 +146,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       {/* Service Toggles & Hearing Tests */}
       <div>
         <label className="font-bold text-slate-700 block uppercase tracking-wider text-[10px] mb-2">
-          Hearing Assessments Conducted
+          Hearing Tests &amp; Checks
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {/* Screening */}
@@ -168,7 +168,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             </span>
           </button>
 
-          {/* Pure Tone Full Hearing Test */}
+          {/* Full Hearing Test */}
           <button
             type="button"
             onClick={() => handleToggleService('audiogram')}
@@ -179,7 +179,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
             }`}
           >
             <div>
-              <div className="text-[11px] sm:text-xs">Comprehensive Full Hearing Test</div>
+              <div className="text-[11px] sm:text-xs">Full Hearing Test</div>
               <div className="text-[9px] sm:text-[10px] text-slate-500">£50.00 Invoiced</div>
             </div>
             <span className={`text-xs ${patient.audiogram ? 'text-brand-blue font-bold' : 'text-slate-300'}`}>
@@ -193,7 +193,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       <div className="bg-slate-50/80 border border-slate-200 rounded-lg p-3 sm:p-3.5 space-y-3">
         <div className="flex items-center justify-between">
           <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
-            Ear Examination &amp; Wax Severity (0–3 Scale)
+            Ear Check &amp; Ear Wax Level (0–3 Scale)
           </label>
           <span className="text-[10px] text-slate-500">
             {patient.hasEarWax ? (
@@ -212,7 +212,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
           {/* Left Ear Wax */}
           <div className="bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-800 text-[11px]">LEFT EAR (AS)</span>
+              <span className="font-bold text-slate-800 text-[11px]">LEFT EAR</span>
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                 patient.leftEarWax === 0
                   ? 'bg-emerald-100 text-emerald-800'
@@ -251,7 +251,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
           {/* Right Ear Wax */}
           <div className="bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-800 text-[11px]">RIGHT EAR (AD)</span>
+              <span className="font-bold text-slate-800 text-[11px]">RIGHT EAR</span>
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                 patient.rightEarWax === 0
                   ? 'bg-emerald-100 text-emerald-800'
@@ -381,7 +381,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {/* Left Ear Finding */}
         <div>
-          <label className="font-semibold text-slate-700 block mb-1">Left Ear Finding (AS)</label>
+          <label className="font-semibold text-slate-700 block mb-1">Left Ear Notes</label>
           <textarea
             rows={2}
             value={patient.leftEarFinding || ''}
@@ -392,7 +392,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
         {/* Right Ear Finding */}
         <div>
-          <label className="font-semibold text-slate-700 block mb-1">Right Ear Finding (AD)</label>
+          <label className="font-semibold text-slate-700 block mb-1">Right Ear Notes</label>
           <textarea
             rows={2}
             value={patient.rightEarFinding || ''}
@@ -414,7 +414,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
         {/* Next Step */}
         <div>
-          <label className="font-semibold text-slate-700 block mb-1">Next Clinical Step</label>
+          <label className="font-semibold text-slate-700 block mb-1">Next Step</label>
           <input
             type="text"
             value={patient.nextStep || ''}
@@ -425,7 +425,7 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
         {/* Recommendations */}
         <div className="sm:col-span-2">
-          <label className="font-semibold text-slate-700 block mb-1">Clinical Summary &amp; Recommendations</label>
+          <label className="font-semibold text-slate-700 block mb-1">Summary &amp; Advice for Care Staff</label>
           <textarea
             rows={2}
             value={patient.recommendations || ''}

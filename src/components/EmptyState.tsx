@@ -126,10 +126,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <h4 className="font-bold text-xs text-brand-navy uppercase tracking-wider">
-            2. Patient Ear &amp; Hearing Summary
+            2. Resident Ear &amp; Hearing Summary
           </h4>
           <p className="text-[11px] sm:text-xs text-slate-600 mt-1 leading-relaxed">
-            Otoscopy findings per ear, recommendations, 2-week olive oil regimen block, and optional Page 2 full hearing test.
+            Visual ear check results per ear, advice for care staff, 2-week olive oil ear drops routine, and optional Page 2 hearing chart.
           </p>
         </div>
 

@@ -20,9 +20,9 @@ export function calculateLineItems(
   const hasWaxRemoval = hasLeft || hasRight;
 
   if (hasWaxRemoval) {
-    let waxDesc = 'Ear Wax Removal (Micro-suction / Irrigation)';
+    let waxDesc = 'Ear Wax Removal (Gentle Cleaning)';
     if (hasLeft && hasRight) {
-      waxDesc = 'Ear Wax Removal - Bilateral (Both Ears)';
+      waxDesc = 'Ear Wax Removal - Both Ears';
     } else if (hasLeft) {
       waxDesc = 'Ear Wax Removal - Left Ear';
     } else if (hasRight) {
@@ -43,7 +43,7 @@ export function calculateLineItems(
   if (audiogram) {
     items.push({
       id: 'item-audiogram',
-      description: 'Comprehensive Diagnostic Full Hearing Test',
+      description: 'Full Hearing Test',
       quantity: 1,
       unit: 'Assessment',
       unitPrice: PRICING.AUDIOGRAM,
@@ -56,7 +56,7 @@ export function calculateLineItems(
     // If only screening conducted or explicitly recorded
     items.push({
       id: 'item-screening',
-      description: 'Initial Audiological Hearing Screening & Otoscopy Check',
+      description: 'Hearing Screening & Ear Check',
       quantity: 1,
       unit: 'Screening',
       unitPrice: PRICING.SCREENING,
@@ -67,7 +67,7 @@ export function calculateLineItems(
     // Included screening alongside other services
     items.push({
       id: 'item-screening',
-      description: 'Initial Audiological Hearing Screening & Otoscopy Check',
+      description: 'Hearing Screening & Ear Check',
       quantity: 1,
       unit: 'Screening',
       unitPrice: PRICING.SCREENING,

@@ -84,38 +84,38 @@ function generateDefaultClinicalFindings(
   const getFindingForSide = (level: EarWaxLevel) => {
     switch (level) {
       case 0:
-        return 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
+        return 'Eardrum is clear and healthy with no wax buildup.';
       case 1:
-        return 'Minor superficial ear wax accumulation observed. Canal patent, tympanic membrane visible.';
+        return 'Small amount of normal ear wax seen. Ear canal is clear, eardrum is visible, and no wax removal is needed.';
       case 2:
-        return 'Moderate ear wax accumulation identified. Wax removal / softening recommended.';
+        return 'Moderate ear wax buildup found. Wax removal recommended after using olive oil drops.';
       case 3:
-        return 'Severe ear wax impaction / occlusion identified. Wax removal recommended.';
+        return 'Heavy ear wax blocking the ear canal. Wax removal recommended after using olive oil drops.';
     }
   };
 
   const leftEarFinding = getFindingForSide(leftWax);
   const rightEarFinding = getFindingForSide(rightWax);
 
-  let hearingTestResult = 'Initial otoscopic examination & hearing check completed.';
+  let hearingTestResult = 'Ear check and hearing test completed.';
   if (audiogram) {
-    hearingTestResult = 'Comprehensive pure-tone air conduction diagnostic full hearing test completed.';
+    hearingTestResult = 'Full hearing test completed.';
   } else if (screening) {
-    hearingTestResult = 'Routine hearing screening performed. Normal threshold indicators detected.';
+    hearingTestResult = 'Hearing screening completed. Good hearing response detected.';
   }
 
-  let recommendations = 'Annual audiological health and hearing review recommended.';
-  let nextStep = 'Discharged / Routine 12-Month Review';
+  let recommendations = 'Routine annual ear and hearing check recommended.';
+  let nextStep = 'All Clear / Routine 12-Month Review';
 
   if (leftWax >= 2 || rightWax >= 2) {
-    recommendations = 'Apply 2-3 drops of medicinal olive oil twice daily for 14 days prior to follow-up ear irrigation / micro-suction if remaining ear wax persists.';
-    nextStep = 'Follow-up Wax Removal / 2-Week Softening';
+    recommendations = 'Please apply 2 to 3 drops of olive oil (or Earol spray) twice a day for 14 days to soften the wax before gentle cleaning.';
+    nextStep = '2-Week Olive Oil Drops / Wax Removal';
   } else if (leftWax === 1 || rightWax === 1) {
-    recommendations = 'Minor non-obstructing ear wax observed. Canal patent; no clinical wax removal required.';
-    nextStep = audiogram ? 'Hearing Aid Consultation / Review' : 'Discharged / Routine 12-Month Review';
+    recommendations = 'Small amount of normal wax present. Normal ear hygiene advised; no wax removal needed.';
+    nextStep = audiogram ? 'Hearing Aid Check & Discussion' : 'All Clear / Routine 12-Month Review';
   } else if (audiogram) {
-    recommendations = 'Discussed hearing aid trial and communicative strategies with resident and care team.';
-    nextStep = 'Hearing Aid Consultation / Review';
+    recommendations = 'Discussed hearing results and helpful communication tips with resident and care team.';
+    nextStep = 'Hearing Aid Check & Discussion';
   }
 
   if (notes) {

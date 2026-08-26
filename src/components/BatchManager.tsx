@@ -487,7 +487,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                 title={!selectedPatient?.seen ? 'Resident not seen' : ''}
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>Patient Summary</span>
+                <span>Resident Summary</span>
               </button>
 
               <button

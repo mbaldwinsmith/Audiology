@@ -288,7 +288,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             <div className="space-y-3 pt-2 border-t border-slate-200">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
-                  Clinical Services &amp; Invoicing
+                  Services &amp; Invoicing
                 </h3>
                 <span className="font-bold text-brand-navy text-xs">
                   Est. Total: £{estimatedTotal.toFixed(2)}
@@ -339,7 +339,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
               <div className="space-y-2 pt-2 border-t border-slate-200">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-700 font-bold uppercase tracking-wider text-[10px]">
-                    Ear Wax Findings (0–3 Scale)
+                    Ear Check &amp; Ear Wax Level (0–3 Scale)
                   </span>
                   <span className="text-[10px] text-slate-500">
                     {leftEarWax >= 2 || rightEarWax >= 2 ? (
@@ -358,7 +358,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                   {/* Left Ear Wax */}
                   <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-800 text-[11px]">LEFT EAR (AS)</span>
+                      <span className="font-semibold text-slate-800 text-[11px]">LEFT EAR</span>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         leftEarWax === 0
                           ? 'bg-emerald-100 text-emerald-800'
@@ -396,7 +396,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                   {/* Right Ear Wax */}
                   <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-800 text-[11px]">RIGHT EAR (AD)</span>
+                      <span className="font-semibold text-slate-800 text-[11px]">RIGHT EAR</span>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         rightEarWax === 0
                           ? 'bg-emerald-100 text-emerald-800'
@@ -438,11 +438,11 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
           {/* Clinical Notes */}
           <div className="space-y-1 pt-2 border-t border-slate-200">
             <label className="block text-slate-700 font-semibold">
-              Clinical Notes &amp; Consultation Remarks
+              Notes &amp; Advice for Care Staff
             </label>
             <textarea
               rows={2}
-              placeholder="e.g. Ear wax removed bilaterally via microsuction. Advised 2-week olive oil softening for remaining flakes."
+              placeholder="e.g. Ear wax removed gently. Advised 2-week olive oil drops if remaining wax persists."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
