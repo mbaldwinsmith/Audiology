@@ -1,4 +1,4 @@
-import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean } from './cleaners';
+import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean, parseEarWaxLevel } from './cleaners';
 import { getCareHomeInitials, getPatientInitials, generateReportRef, generateInvoiceNo } from './hash';
 import { calculateLineItems, calculateTotalAmount } from './pricing';
 import { parseAudiologyCsv, createNewPatient, generateCleanedCsv } from './csvParser';
@@ -14,7 +14,7 @@ import {
 export async function runSelfVerification() {
   console.log('=== ELITESIGHT AUDIOLOGY VERIFICATION RUN ===');
 
-  // Test 1: Cleaners
+  // Test 1: Cleaners & Ear Wax Level Parser
   console.assert(toTitleCase('melanie dudman') === 'Melanie Dudman', 'Test 1.1 failed: TitleCase simple');
   console.assert(toTitleCase("O'CONNOR") === "O'Connor", 'Test 1.2 failed: TitleCase apostrophe');
   console.assert(toTitleCase('smith-jones') === 'Smith-Jones', 'Test 1.3 failed: TitleCase hyphen');
@@ -23,7 +23,15 @@ export async function runSelfVerification() {
   console.assert(addDaysToDate('24/08/2026', 7) === '31/08/2026', 'Test 1.6 failed: Add 7 days');
   console.assert(parseBoolean('Yes') === true, 'Test 1.7 failed: Boolean Yes');
   console.assert(parseBoolean('No') === false, 'Test 1.8 failed: Boolean No');
-  console.log('✔ Phase 1 Cleaners & Date Normalizers Passed');
+  console.assert(parseEarWaxLevel('0') === 0, 'Test 1.9 failed: Ear wax level 0');
+  console.assert(parseEarWaxLevel('1') === 1, 'Test 1.10 failed: Ear wax level 1');
+  console.assert(parseEarWaxLevel('2') === 2, 'Test 1.11 failed: Ear wax level 2');
+  console.assert(parseEarWaxLevel('3') === 3, 'Test 1.12 failed: Ear wax level 3');
+  console.assert(parseEarWaxLevel('Clear') === 0, 'Test 1.13 failed: Ear wax level Clear');
+  console.assert(parseEarWaxLevel('Minor') === 1, 'Test 1.14 failed: Ear wax level Minor');
+  console.assert(parseEarWaxLevel('Moderate') === 2, 'Test 1.15 failed: Ear wax level Moderate');
+  console.assert(parseEarWaxLevel('Severe') === 3, 'Test 1.16 failed: Ear wax level Severe');
+  console.log('✔ Phase 1 Cleaners & Ear Wax Normalizers Passed');
 
   // Test 2: Deterministic Hash
   const chInitials = getCareHomeInitials('Colne View Care Home');
@@ -39,27 +47,37 @@ export async function runSelfVerification() {
   console.assert(invoiceNo === 'CV-MD1403-INV1', `Test 2.4 failed: Expected 'CV-MD1403-INV1', got '${invoiceNo}'`);
   console.log('✔ Phase 2 Deterministic Hashes & References Passed');
 
-  // Test 3: Pricing calculations
-  // Screening only
-  const items1 = calculateLineItems(true, false, false, false);
+  // Test 3: Pricing calculations (with 0..3 ear wax levels)
+  // Screening only (0, 0 wax)
+  const items1 = calculateLineItems(true, false, 0, 0);
   console.assert(calculateTotalAmount(items1) === 0, 'Test 3.1 failed: Screening should be £0');
 
-  // Full Hearing Test only
-  const items2 = calculateLineItems(true, true, false, false);
+  // Full Hearing Test only (0, 0 wax)
+  const items2 = calculateLineItems(true, true, 0, 0);
   console.assert(calculateTotalAmount(items2) === 50, 'Test 3.2 failed: Full Hearing Test should be £50');
 
-  // Single ear wax
-  const items3 = calculateLineItems(true, false, true, false);
+  // Single ear wax (level 2 left, 0 right)
+  const items3 = calculateLineItems(true, false, 2, 0);
   console.assert(calculateTotalAmount(items3) === 80, 'Test 3.3 failed: Wax should be £80');
 
-  // Bilateral ear wax
-  const items4 = calculateLineItems(true, false, true, true);
+  // Bilateral ear wax (level 2 left, level 3 right)
+  const items4 = calculateLineItems(true, false, 2, 3);
   console.assert(calculateTotalAmount(items4) === 80, 'Test 3.4 failed: Bilateral wax flat fee should be £80');
 
   // Bilateral wax + Full Hearing Test
-  const items5 = calculateLineItems(true, true, true, true);
+  const items5 = calculateLineItems(true, true, 2, 3);
   console.assert(calculateTotalAmount(items5) === 130, 'Test 3.5 failed: Wax + Full Hearing Test should be £130');
-  console.log('✔ Phase 3 Pricing & Automated Invoicing Rules Passed');
+
+  // Minor ear wax only (level 1 left, level 1 right) - Should NOT trigger removal
+  const itemsMinor = calculateLineItems(true, false, 1, 1);
+  console.assert(calculateTotalAmount(itemsMinor) === 0, 'Test 3.6 failed: Minor wax (level 1) should not trigger removal');
+  console.assert(itemsMinor.length === 1 && itemsMinor[0].id === 'item-screening', 'Test 3.7 failed: Minor wax should only have screening');
+
+  // Mixed levels (level 1 left [no removal], level 2 right [removal]) - Should trigger single Right Ear removal
+  const itemsMixed = calculateLineItems(true, false, 1, 2);
+  console.assert(calculateTotalAmount(itemsMixed) === 80, 'Test 3.8 failed: Level 1 + Level 2 should trigger single ear removal');
+  console.assert(itemsMixed.find((i) => i.id === 'item-wax')?.description === 'Ear Wax Removal - Right Ear', 'Test 3.9 failed: Expected unilateral Right Ear removal');
+  console.log('✔ Phase 3 Pricing & Automated Invoicing Rules Passed (Only 2 & 3 Trigger Removal)');
 
   // Test 4: Full CSV Parsing & Exclusion verification
   const parseRes = await parseAudiologyCsv(SAMPLE_CSV_DATA);
@@ -68,15 +86,20 @@ export async function runSelfVerification() {
   console.assert(parseRes.unseenPatients.length === 3, `Test 4.3 failed: Expected 3 unseen, got ${parseRes.unseenPatients.length}`);
   console.assert(Boolean(parseRes.careHomeSummary && parseRes.careHomeSummary.totalRevenue > 0), 'Test 4.4 failed: Revenue must be calculated');
 
+  // Verify Melanie Dudman has leftEarWax = 2 and rightEarWax = 3
+  const melanie = parseRes.patients.find((p) => p.residentFullName === 'Melanie Dudman');
+  console.assert(melanie?.leftEarWax === 2, `Test 4.5 failed: Expected Melanie leftEarWax 2, got ${melanie?.leftEarWax}`);
+  console.assert(melanie?.rightEarWax === 3, `Test 4.6 failed: Expected Melanie rightEarWax 3, got ${melanie?.rightEarWax}`);
+
   // Verify unseen exclusion
   for (const unseen of parseRes.unseenPatients) {
-    console.assert(unseen.lineItems.length === 0, `Test 4.5 failed: Unseen patient ${unseen.residentFullName} has line items`);
-    console.assert(unseen.totalAmount === 0, `Test 4.6 failed: Unseen patient ${unseen.residentFullName} has non-zero total`);
-    console.assert(unseen.reasonNotSeen.length > 0, `Test 4.7 failed: Unseen patient ${unseen.residentFullName} missing reason`);
+    console.assert(unseen.lineItems.length === 0, `Test 4.7 failed: Unseen patient ${unseen.residentFullName} has line items`);
+    console.assert(unseen.totalAmount === 0, `Test 4.8 failed: Unseen patient ${unseen.residentFullName} has non-zero total`);
+    console.assert(unseen.reasonNotSeen.length > 0, `Test 4.9 failed: Unseen patient ${unseen.residentFullName} missing reason`);
   }
   console.log('✔ Phase 4 10-Patient CSV Parsing & Unseen Exclusion Rules Passed');
 
-  // Test 5: createNewPatient (Walk-in resident)
+  // Test 5: createNewPatient (Walk-in resident with EarWaxLevel)
   const walkIn = createNewPatient({
     careHome: 'Colne View Care Home',
     postCode: 'CO9 2FF',
@@ -88,16 +111,18 @@ export async function runSelfVerification() {
     seen: true,
     screening: true,
     audiogram: true,
-    leftEarWax: true,
-    rightEarWax: false,
+    leftEarWax: 2,
+    rightEarWax: 0,
     notes: 'Mild tinnitus reported',
     indexOffset: 10,
   });
   console.assert(walkIn.residentFullName === 'James Wilson', 'Test 5.1 failed: Full name');
   console.assert(walkIn.reportRef === 'CV-JW1205-A11', `Test 5.2 failed: Report ref ${walkIn.reportRef}`);
   console.assert(walkIn.invoiceNo === 'CV-JW1205-INV11', `Test 5.3 failed: Invoice no ${walkIn.invoiceNo}`);
-  console.assert(walkIn.totalAmount === 130, `Test 5.4 failed: Total amount expected 130, got ${walkIn.totalAmount}`);
-  console.assert(walkIn.lineItems.length === 3, `Test 5.5 failed: Expected 3 line items, got ${walkIn.lineItems.length}`);
+  console.assert(walkIn.leftEarWax === 2, `Test 5.4 failed: Left ear wax expected 2, got ${walkIn.leftEarWax}`);
+  console.assert(walkIn.rightEarWax === 0, `Test 5.5 failed: Right ear wax expected 0, got ${walkIn.rightEarWax}`);
+  console.assert(walkIn.totalAmount === 130, `Test 5.6 failed: Total amount expected 130, got ${walkIn.totalAmount}`);
+  console.assert(walkIn.lineItems.length === 3, `Test 5.7 failed: Expected 3 line items, got ${walkIn.lineItems.length}`);
   console.log('✔ Phase 5 Walk-in Patient Creation Passed');
 
   // Test 6: recalculateSummary & Deletion

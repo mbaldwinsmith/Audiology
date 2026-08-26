@@ -1,4 +1,4 @@
-import { InvoiceLineItem } from '../types/audiology';
+import { InvoiceLineItem, EarWaxLevel } from '../types/audiology';
 import { PRICING } from './constants';
 
 /**
@@ -10,20 +10,22 @@ import { PRICING } from './constants';
 export function calculateLineItems(
   screening: boolean,
   audiogram: boolean,
-  leftEarWax: boolean,
-  rightEarWax: boolean
+  leftEarWax: EarWaxLevel | boolean | number,
+  rightEarWax: EarWaxLevel | boolean | number
 ): InvoiceLineItem[] {
   const items: InvoiceLineItem[] = [];
 
-  const hasWaxRemoval = leftEarWax || rightEarWax;
+  const hasLeft = typeof leftEarWax === 'number' ? leftEarWax >= 2 : Boolean(leftEarWax);
+  const hasRight = typeof rightEarWax === 'number' ? rightEarWax >= 2 : Boolean(rightEarWax);
+  const hasWaxRemoval = hasLeft || hasRight;
 
   if (hasWaxRemoval) {
     let waxDesc = 'Ear Wax Removal (Micro-suction / Irrigation)';
-    if (leftEarWax && rightEarWax) {
+    if (hasLeft && hasRight) {
       waxDesc = 'Ear Wax Removal - Bilateral (Both Ears)';
-    } else if (leftEarWax) {
+    } else if (hasLeft) {
       waxDesc = 'Ear Wax Removal - Left Ear';
-    } else if (rightEarWax) {
+    } else if (hasRight) {
       waxDesc = 'Ear Wax Removal - Right Ear';
     }
 

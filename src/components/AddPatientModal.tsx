@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CareHomeSummary, PatientRow } from '../types/audiology';
+import { CareHomeSummary, PatientRow, EarWaxLevel, EAR_WAX_LABELS } from '../types/audiology';
 import { createNewPatient } from '../utils/csvParser';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
 import {
@@ -24,6 +24,13 @@ interface AddPatientModalProps {
   existingCount: number;
 }
 
+const WAX_LEVEL_OPTIONS: { level: EarWaxLevel; label: string; activeClass: string }[] = [
+  { level: 0, label: 'Clear', activeClass: 'bg-emerald-500 text-white border-emerald-600 shadow-xs' },
+  { level: 1, label: 'Minor', activeClass: 'bg-amber-500 text-white border-amber-600 shadow-xs' },
+  { level: 2, label: 'Moderate', activeClass: 'bg-orange-500 text-white border-orange-600 shadow-xs' },
+  { level: 3, label: 'Severe', activeClass: 'bg-rose-600 text-white border-rose-700 shadow-xs' },
+];
+
 export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   isOpen,
   onClose,
@@ -45,8 +52,8 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   const [reasonNotSeen, setReasonNotSeen] = useState('');
   const [screening, setScreening] = useState(true);
   const [audiogram, setAudiogram] = useState(false);
-  const [leftEarWax, setLeftEarWax] = useState(false);
-  const [rightEarWax, setRightEarWax] = useState(false);
+  const [leftEarWax, setLeftEarWax] = useState<EarWaxLevel>(0);
+  const [rightEarWax, setRightEarWax] = useState<EarWaxLevel>(0);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -96,8 +103,8 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
         reasonNotSeen: seen ? '' : reasonNotSeen || 'Resident unavailable or declined visit',
         screening: seen ? screening : false,
         audiogram: seen ? audiogram : false,
-        leftEarWax: seen ? leftEarWax : false,
-        rightEarWax: seen ? rightEarWax : false,
+        leftEarWax: seen ? leftEarWax : 0,
+        rightEarWax: seen ? rightEarWax : 0,
         notes,
         indexOffset: existingCount,
       });
@@ -111,8 +118,8 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       setReasonNotSeen('');
       setScreening(true);
       setAudiogram(false);
-      setLeftEarWax(false);
-      setRightEarWax(false);
+      setLeftEarWax(0);
+      setRightEarWax(0);
       setNotes('');
       setError(null);
       onClose();
@@ -303,7 +310,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                     <div className="text-xs font-semibold">Routine Screening</div>
                     <div className="text-[10px] text-slate-500">£0.00 (Complimentary)</div>
                   </div>
-                  <span className={`text-xs ${screening ? 'text-brand-blue' : 'text-slate-300'}`}>
+                  <span className={`text-xs ${screening ? 'text-brand-blue font-bold' : 'text-slate-300'}`}>
                     ●
                   </span>
                 </button>
@@ -320,54 +327,110 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 >
                   <div>
                     <div className="text-xs font-semibold">Full Hearing Test</div>
-                    <div className="text-[10px] text-brand-blue font-bold">£50.00</div>
+                    <div className="text-[10px] text-brand-blue font-bold">£50.00 Invoiced</div>
                   </div>
-                  <span className={`text-xs ${audiogram ? 'text-brand-blue' : 'text-slate-300'}`}>
+                  <span className={`text-xs ${audiogram ? 'text-brand-blue font-bold' : 'text-slate-300'}`}>
                     ●
                   </span>
                 </button>
+              </div>
 
-                {/* Left Ear Wax */}
-                <button
-                  type="button"
-                  onClick={() => setLeftEarWax(!leftEarWax)}
-                  className={`p-2.5 rounded-lg border text-left transition flex items-center justify-between ${
-                    leftEarWax
-                      ? 'bg-amber-50 border-amber-500 text-amber-900 font-semibold'
-                      : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <div>
-                    <div className="text-xs font-semibold">Left Ear Wax</div>
-                    <div className="text-[10px] text-amber-700 font-bold">
-                      {rightEarWax ? 'Included in £80 Flat' : '£80.00 Removal'}
+              {/* Ear Wax Findings (0 to 3 Integer Scale) */}
+              <div className="space-y-2 pt-2 border-t border-slate-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-700 font-bold uppercase tracking-wider text-[10px]">
+                    Ear Wax Findings (0–3 Scale)
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    {leftEarWax >= 2 || rightEarWax >= 2 ? (
+                      <span className="text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                        £80.00 Wax Removal Active
+                      </span>
+                    ) : (
+                      <span className="text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                        No Removal Required (£0)
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Left Ear Wax */}
+                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-800 text-[11px]">LEFT EAR (AS)</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        leftEarWax === 0
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : leftEarWax === 1
+                          ? 'bg-amber-100 text-amber-800'
+                          : leftEarWax === 2
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {leftEarWax} – {EAR_WAX_LABELS[leftEarWax]}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1">
+                      {WAX_LEVEL_OPTIONS.map(({ level, label, activeClass }) => {
+                        const isActive = leftEarWax === level;
+                        return (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() => setLeftEarWax(level)}
+                            className={`py-1.5 px-1 rounded text-center transition border font-semibold text-[10px] ${
+                              isActive
+                                ? activeClass
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="font-bold">{level}</div>
+                            <div className="text-[9px] font-normal leading-tight">{label}</div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                  <span className={`text-xs ${leftEarWax ? 'text-amber-600' : 'text-slate-300'}`}>
-                    ●
-                  </span>
-                </button>
 
-                {/* Right Ear Wax */}
-                <button
-                  type="button"
-                  onClick={() => setRightEarWax(!rightEarWax)}
-                  className={`p-2.5 rounded-lg border text-left transition flex items-center justify-between ${
-                    rightEarWax
-                      ? 'bg-amber-50 border-amber-500 text-amber-900 font-semibold'
-                      : 'bg-slate-50 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <div>
-                    <div className="text-xs font-semibold">Right Ear Wax</div>
-                    <div className="text-[10px] text-amber-700 font-bold">
-                      {leftEarWax ? 'Included in £80 Flat' : '£80.00 Removal'}
+                  {/* Right Ear Wax */}
+                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-800 text-[11px]">RIGHT EAR (AD)</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        rightEarWax === 0
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : rightEarWax === 1
+                          ? 'bg-amber-100 text-amber-800'
+                          : rightEarWax === 2
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {rightEarWax} – {EAR_WAX_LABELS[rightEarWax]}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1">
+                      {WAX_LEVEL_OPTIONS.map(({ level, label, activeClass }) => {
+                        const isActive = rightEarWax === level;
+                        return (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() => setRightEarWax(level)}
+                            className={`py-1.5 px-1 rounded text-center transition border font-semibold text-[10px] ${
+                              isActive
+                                ? activeClass
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="font-bold">{level}</div>
+                            <div className="text-[9px] font-normal leading-tight">{label}</div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                  <span className={`text-xs ${rightEarWax ? 'text-amber-600' : 'text-slate-300'}`}>
-                    ●
-                  </span>
-                </button>
+                </div>
               </div>
             </div>
           )}

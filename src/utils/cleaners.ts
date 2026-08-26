@@ -88,3 +88,50 @@ export function parseBoolean(value?: string | boolean | number | null): boolean 
   }
   return false;
 }
+
+import { EarWaxLevel } from '../types/audiology';
+
+/**
+ * Normalizes ear wax level from string, number, or boolean inputs:
+ * 0 = Clear
+ * 1 = Minor
+ * 2 = Moderate
+ * 3 = Severe
+ */
+export function parseEarWaxLevel(value?: string | boolean | number | null): EarWaxLevel {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') {
+    if (value <= 0) return 0;
+    if (value === 1) return 1;
+    if (value === 2) return 2;
+    return 3;
+  }
+  if (typeof value === 'boolean') {
+    return value ? 2 : 0;
+  }
+
+  const str = String(value).trim().toLowerCase();
+  if (!str || ['0', 'clear', 'no', 'n', 'false', 'none', 'clean', 'nil', 'healthy'].includes(str)) {
+    return 0;
+  }
+  if (['1', 'minor', 'mild', 'slight', 'low'].includes(str)) {
+    return 1;
+  }
+  if (['2', 'moderate', 'mod', 'medium', 'yes', 'y', 'true', 'seen', 'positive'].includes(str)) {
+    return 2;
+  }
+  if (['3', 'severe', 'heavy', 'impacted', 'occluded', 'full', 'high'].includes(str)) {
+    return 3;
+  }
+
+  const parsed = parseInt(str, 10);
+  if (!isNaN(parsed)) {
+    if (parsed <= 0) return 0;
+    if (parsed === 1) return 1;
+    if (parsed === 2) return 2;
+    return 3;
+  }
+
+  return 0;
+}
+

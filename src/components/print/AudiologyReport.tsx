@@ -83,36 +83,110 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white grid grid-cols-2 gap-3">
               {/* Left Ear */}
-              <div className={`p-3 rounded-md border ${patient.leftEarWax ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-50/70 border-slate-200'}`}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${patient.leftEarWax ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
-                    LEFT EAR (AS)
-                  </span>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${patient.leftEarWax ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {patient.leftEarWax ? 'Ear Wax Present' : 'Canal Clear'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-700 leading-snug">
-                  {patient.leftEarFinding || 'External canal and tympanic membrane inspected.'}
-                </p>
-              </div>
+              {(() => {
+                const isLeftClear = patient.leftEarWax === 0;
+                const isLeftMinor = patient.leftEarWax === 1;
+                const isLeftModerate = patient.leftEarWax === 2;
+                const isLeftSevere = patient.leftEarWax === 3;
+                const cardBg = isLeftClear
+                  ? 'bg-slate-50/70 border-slate-200'
+                  : isLeftMinor
+                  ? 'bg-amber-50/50 border-amber-200'
+                  : isLeftModerate
+                  ? 'bg-orange-50/60 border-orange-200'
+                  : 'bg-rose-50/60 border-rose-200';
+                const dotBg = isLeftClear
+                  ? 'bg-emerald-500'
+                  : isLeftMinor
+                  ? 'bg-amber-500'
+                  : isLeftModerate
+                  ? 'bg-orange-500'
+                  : 'bg-rose-600';
+                const badgeClass = isLeftClear
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : isLeftMinor
+                  ? 'bg-amber-100 text-amber-800'
+                  : isLeftModerate
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-rose-100 text-rose-800';
+                const label = isLeftClear
+                  ? 'Canal Clear'
+                  : isLeftMinor
+                  ? 'Minor Ear Wax'
+                  : isLeftModerate
+                  ? 'Moderate Ear Wax'
+                  : 'Severe Ear Wax';
+
+                return (
+                  <div className={`p-3 rounded-md border ${cardBg}`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
+                        LEFT EAR (AS)
+                      </span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
+                        {label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      {patient.leftEarFinding || 'External canal and tympanic membrane inspected.'}
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Right Ear */}
-              <div className={`p-3 rounded-md border ${patient.rightEarWax ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-50/70 border-slate-200'}`}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${patient.rightEarWax ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
-                    RIGHT EAR (AD)
-                  </span>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${patient.rightEarWax ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {patient.rightEarWax ? 'Ear Wax Present' : 'Canal Clear'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-700 leading-snug">
-                  {patient.rightEarFinding || 'External canal and tympanic membrane inspected.'}
-                </p>
-              </div>
+              {(() => {
+                const isRightClear = patient.rightEarWax === 0;
+                const isRightMinor = patient.rightEarWax === 1;
+                const isRightModerate = patient.rightEarWax === 2;
+                const isRightSevere = patient.rightEarWax === 3;
+                const cardBg = isRightClear
+                  ? 'bg-slate-50/70 border-slate-200'
+                  : isRightMinor
+                  ? 'bg-amber-50/50 border-amber-200'
+                  : isRightModerate
+                  ? 'bg-orange-50/60 border-orange-200'
+                  : 'bg-rose-50/60 border-rose-200';
+                const dotBg = isRightClear
+                  ? 'bg-emerald-500'
+                  : isRightMinor
+                  ? 'bg-amber-500'
+                  : isRightModerate
+                  ? 'bg-orange-500'
+                  : 'bg-rose-600';
+                const badgeClass = isRightClear
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : isRightMinor
+                  ? 'bg-amber-100 text-amber-800'
+                  : isRightModerate
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-rose-100 text-rose-800';
+                const label = isRightClear
+                  ? 'Canal Clear'
+                  : isRightMinor
+                  ? 'Minor Ear Wax'
+                  : isRightModerate
+                  ? 'Moderate Ear Wax'
+                  : 'Severe Ear Wax';
+
+                return (
+                  <div className={`p-3 rounded-md border ${cardBg}`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
+                        RIGHT EAR (AD)
+                      </span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
+                        {label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      {patient.rightEarFinding || 'External canal and tympanic membrane inspected.'}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

@@ -17,6 +17,15 @@ export interface RawCsvRow {
   [key: string]: string | undefined;
 }
 
+export type EarWaxLevel = 0 | 1 | 2 | 3;
+
+export const EAR_WAX_LABELS: Record<EarWaxLevel, string> = {
+  0: 'Clear',
+  1: 'Minor',
+  2: 'Moderate',
+  3: 'Severe',
+};
+
 export interface PatientRow {
   id: string; // Unique row ID in-memory
   careHome: string;
@@ -31,9 +40,9 @@ export interface PatientRow {
   reasonNotSeen: string;
   screening: boolean;
   audiogram: boolean;
-  leftEarWax: boolean;
-  rightEarWax: boolean;
-  hasEarWax: boolean; // left || right
+  leftEarWax: EarWaxLevel; // 0 = Clear, 1 = Minor, 2 = Moderate, 3 = Severe
+  rightEarWax: EarWaxLevel; // 0 = Clear, 1 = Minor, 2 = Moderate, 3 = Severe
+  hasEarWax: boolean; // leftEarWax >= 2 || rightEarWax >= 2 (triggers removal)
   notes: string;
   
   // Deterministic generated fields

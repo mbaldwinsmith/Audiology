@@ -5,8 +5,9 @@ import {
   CareHomeSummary,
   ValidationError,
   ParseResult,
+  EarWaxLevel,
 } from '../types/audiology';
-import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean } from './cleaners';
+import { toTitleCase, normalizeDate, addDaysToDate, parseBoolean, parseEarWaxLevel } from './cleaners';
 import { generateReportRef, generateInvoiceNo, getCareHomeInitials, getPatientInitials } from './hash';
 import { calculateLineItems, calculateTotalAmount } from './pricing';
 import { CSV_REQUIRED_COLUMNS, PRICING } from './constants';
@@ -71,28 +72,30 @@ function getRowValue(row: RawCsvRow, colName: string, matched: Record<string, st
 }
 
 /**
- * Generates clinical helper findings based on patient flags.
+ * Generates clinical helper findings based on patient flags and ear wax severity (0..3).
  */
 function generateDefaultClinicalFindings(
-  leftWax: boolean,
-  rightWax: boolean,
+  leftWax: EarWaxLevel,
+  rightWax: EarWaxLevel,
   audiogram: boolean,
   screening: boolean,
   notes: string
 ) {
-  let leftEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
-  let rightEarFinding = 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
+  const getFindingForSide = (level: EarWaxLevel) => {
+    switch (level) {
+      case 0:
+        return 'Tympanic membrane clear, healthy landmarks visible, no obstructing ear wax.';
+      case 1:
+        return 'Minor superficial ear wax accumulation observed. Canal patent, tympanic membrane visible.';
+      case 2:
+        return 'Moderate ear wax accumulation identified. Wax removal / softening recommended.';
+      case 3:
+        return 'Severe ear wax impaction / occlusion identified. Wax removal recommended.';
+    }
+  };
 
-  if (leftWax && rightWax) {
-    leftEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
-    rightEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
-  } else if (leftWax) {
-    leftEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
-    rightEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
-  } else if (rightWax) {
-    leftEarFinding = 'External auditory canal clear, tympanic membrane intact and visible.';
-    rightEarFinding = 'Ear wax occlusion identified. Wax removal recommended.';
-  }
+  const leftEarFinding = getFindingForSide(leftWax);
+  const rightEarFinding = getFindingForSide(rightWax);
 
   let hearingTestResult = 'Initial otoscopic examination & hearing check completed.';
   if (audiogram) {
@@ -104,9 +107,12 @@ function generateDefaultClinicalFindings(
   let recommendations = 'Annual audiological health and hearing review recommended.';
   let nextStep = 'Discharged / Routine 12-Month Review';
 
-  if (leftWax || rightWax) {
+  if (leftWax >= 2 || rightWax >= 2) {
     recommendations = 'Apply 2-3 drops of medicinal olive oil twice daily for 14 days prior to follow-up ear irrigation / micro-suction if remaining ear wax persists.';
     nextStep = 'Follow-up Wax Removal / 2-Week Softening';
+  } else if (leftWax === 1 || rightWax === 1) {
+    recommendations = 'Minor non-obstructing ear wax observed. Canal patent; no clinical wax removal required.';
+    nextStep = audiogram ? 'Hearing Aid Consultation / Review' : 'Discharged / Routine 12-Month Review';
   } else if (audiogram) {
     recommendations = 'Discussed hearing aid trial and communicative strategies with resident and care team.';
     nextStep = 'Hearing Aid Consultation / Review';
@@ -210,9 +216,9 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const reasonNotSeen = reasonNotSeenRaw || (seen ? '' : 'Resident unavailable or declined visit');
           const screening = parseBoolean(screeningRaw);
           const audiogram = parseBoolean(audiogramRaw);
-          const leftEarWax = parseBoolean(leftWaxRaw);
-          const rightEarWax = parseBoolean(rightWaxRaw);
-          const hasEarWax = leftEarWax || rightEarWax;
+          const leftEarWax = parseEarWaxLevel(leftWaxRaw);
+          const rightEarWax = parseEarWaxLevel(rightWaxRaw);
+          const hasEarWax = leftEarWax >= 2 || rightEarWax >= 2;
 
           const reportRef = generateReportRef(careHome, firstName, surname, dob, index + 1);
           const invoiceNo = generateInvoiceNo(careHome, firstName, surname, dob, index + 1);
@@ -341,9 +347,9 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
  */
 export function generateCsvTemplate(): string {
   const headers = CSV_REQUIRED_COLUMNS.join(',');
-  const sampleRow1 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,14/03/1938,Sarah Jenkins,Melanie,Dudman,Yes,,Yes,Yes,Yes,Yes,Resident reported reduced hearing and left ear fullness';
-  const sampleRow2 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,22/11/1942,Sarah Jenkins,Arthur,Pendleton,Yes,,Yes,No,Yes,No,Mild wax accumulation left ear';
-  const sampleRow3 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,05/09/1935,Sarah Jenkins,Dorothy,Evans,No,Resident resting in bed - family requested rescheduling,No,No,No,No,Rescheduled for next visit';
+  const sampleRow1 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,14/03/1938,Sarah Jenkins,Melanie,Dudman,Yes,,Yes,Yes,2,3,Resident reported reduced hearing and left ear fullness';
+  const sampleRow2 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,22/11/1942,Sarah Jenkins,Arthur,Pendleton,Yes,,Yes,No,3,0,Mild wax accumulation left ear';
+  const sampleRow3 = 'Fairhaven Care Home,CB25 9EJ,24/08/2026,05/09/1935,Sarah Jenkins,Dorothy,Evans,No,Resident resting in bed - family requested rescheduling,No,No,0,0,Rescheduled for next visit';
 
   return `${headers}\n${sampleRow1}\n${sampleRow2}\n${sampleRow3}\n`;
 }
@@ -360,8 +366,8 @@ export interface NewPatientInput {
   reasonNotSeen?: string;
   screening: boolean;
   audiogram: boolean;
-  leftEarWax: boolean;
-  rightEarWax: boolean;
+  leftEarWax: EarWaxLevel;
+  rightEarWax: EarWaxLevel;
   isPaid?: boolean;
   paymentMethod?: string;
   paymentDate?: string;
@@ -387,7 +393,7 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
   const audiogram = input.audiogram;
   const leftEarWax = input.leftEarWax;
   const rightEarWax = input.rightEarWax;
-  const hasEarWax = leftEarWax || rightEarWax;
+  const hasEarWax = leftEarWax >= 2 || rightEarWax >= 2;
   const isPaid = seen ? Boolean(input.isPaid) : false;
   const paymentMethod = isPaid ? input.paymentMethod || 'SumUp Card Reader' : '';
   const paymentDate = isPaid ? normalizeDate(input.paymentDate || appointmentDate) : '';
@@ -467,8 +473,8 @@ export function generateCleanedCsv(
       'Reason not seen': p.reasonNotSeen,
       'Screening?': p.screening ? 'Yes' : 'No',
       'Full Hearing Test?': p.audiogram ? 'Yes' : 'No',
-      'Left Ear Wax?': p.leftEarWax ? 'Yes' : 'No',
-      'Right Ear Wax': p.rightEarWax ? 'Yes' : 'No',
+      'Left Ear Wax?': p.leftEarWax,
+      'Right Ear Wax': p.rightEarWax,
       'Notes': p.notes,
     };
 

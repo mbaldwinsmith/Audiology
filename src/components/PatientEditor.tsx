@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PatientRow } from '../types/audiology';
+import { PatientRow, EarWaxLevel, EAR_WAX_LABELS } from '../types/audiology';
 import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
 import { AudiogramUploader } from './AudiogramUploader';
 import { Edit3, FileText, Receipt, Trash2, CreditCard, CheckCircle2, Clock } from 'lucide-react';
@@ -11,6 +11,33 @@ interface PatientEditorProps {
   onDeletePatient?: (patientId: string) => void;
 }
 
+const WAX_LEVELS: { level: EarWaxLevel; label: string; activeClass: string; dotClass: string }[] = [
+  {
+    level: 0,
+    label: 'Clear',
+    activeClass: 'bg-emerald-500 text-white border-emerald-600 shadow-xs',
+    dotClass: 'bg-emerald-500',
+  },
+  {
+    level: 1,
+    label: 'Minor',
+    activeClass: 'bg-amber-500 text-white border-amber-600 shadow-xs',
+    dotClass: 'bg-amber-500',
+  },
+  {
+    level: 2,
+    label: 'Moderate',
+    activeClass: 'bg-orange-500 text-white border-orange-600 shadow-xs',
+    dotClass: 'bg-orange-500',
+  },
+  {
+    level: 3,
+    label: 'Severe',
+    activeClass: 'bg-rose-600 text-white border-rose-700 shadow-xs',
+    dotClass: 'bg-rose-600',
+  },
+];
+
 export const PatientEditor: React.FC<PatientEditorProps> = ({
   patient,
   onUpdatePatient,
@@ -18,9 +45,21 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleToggleService = (field: 'screening' | 'audiogram' | 'leftEarWax' | 'rightEarWax') => {
+  const handleToggleService = (field: 'screening' | 'audiogram') => {
     const updated = { ...patient, [field]: !patient[field] };
-    updated.hasEarWax = updated.leftEarWax || updated.rightEarWax;
+    updated.lineItems = calculateLineItems(
+      updated.screening,
+      updated.audiogram,
+      updated.leftEarWax,
+      updated.rightEarWax
+    );
+    updated.totalAmount = calculateTotalAmount(updated.lineItems);
+    onUpdatePatient(updated);
+  };
+
+  const handleEarWaxChange = (side: 'leftEarWax' | 'rightEarWax', level: EarWaxLevel) => {
+    const updated = { ...patient, [side]: level };
+    updated.hasEarWax = updated.leftEarWax >= 2 || updated.rightEarWax >= 2;
     updated.lineItems = calculateLineItems(
       updated.screening,
       updated.audiogram,
@@ -104,27 +143,27 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
         </div>
       </div>
 
-      {/* Service Toggles & Pricing Quick-Toggles */}
+      {/* Service Toggles & Hearing Tests */}
       <div>
         <label className="font-bold text-slate-700 block uppercase tracking-wider text-[10px] mb-2">
-          Billable Clinical Services Conducted
+          Hearing Assessments Conducted
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {/* Screening */}
           <button
             type="button"
             onClick={() => handleToggleService('screening')}
-            className={`p-2 sm:p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
+            className={`p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
               patient.screening
                 ? 'bg-brand-soft border-brand-blue text-brand-navy font-semibold'
                 : 'bg-slate-50 border-slate-200 text-slate-600'
             }`}
           >
             <div>
-              <div className="text-[11px] sm:text-xs">Screening</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500">£0.00 (Free)</div>
+              <div className="text-[11px] sm:text-xs">Routine Screening</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-500">£0.00 (Complimentary)</div>
             </div>
-            <span className={`text-xs ${patient.screening ? 'text-brand-blue' : 'text-slate-300'}`}>
+            <span className={`text-xs ${patient.screening ? 'text-brand-blue font-bold' : 'text-slate-300'}`}>
               ●
             </span>
           </button>
@@ -133,58 +172,120 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
           <button
             type="button"
             onClick={() => handleToggleService('audiogram')}
-            className={`p-2 sm:p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
+            className={`p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
               patient.audiogram
                 ? 'bg-brand-soft border-brand-blue text-brand-navy font-semibold'
                 : 'bg-slate-50 border-slate-200 text-slate-600'
             }`}
           >
             <div>
-              <div className="text-[11px] sm:text-xs">Full Hearing Test</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500">£50.00</div>
+              <div className="text-[11px] sm:text-xs">Comprehensive Full Hearing Test</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-500">£50.00 Invoiced</div>
             </div>
-            <span className={`text-xs ${patient.audiogram ? 'text-brand-blue' : 'text-slate-300'}`}>
+            <span className={`text-xs ${patient.audiogram ? 'text-brand-blue font-bold' : 'text-slate-300'}`}>
               ●
             </span>
           </button>
+        </div>
+      </div>
 
+      {/* Ear Wax Findings (0 to 3 Integer Scale) */}
+      <div className="bg-slate-50/80 border border-slate-200 rounded-lg p-3 sm:p-3.5 space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+            Ear Examination &amp; Wax Severity (0–3 Scale)
+          </label>
+          <span className="text-[10px] text-slate-500">
+            {patient.hasEarWax ? (
+              <span className="font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                £80.00 Flat Fee Removal Active
+              </span>
+            ) : (
+              <span className="text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                No Removal Required (£0)
+              </span>
+            )}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Left Ear Wax */}
-          <button
-            type="button"
-            onClick={() => handleToggleService('leftEarWax')}
-            className={`p-2 sm:p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
-              patient.leftEarWax
-                ? 'bg-amber-50 border-amber-400 text-amber-900 font-semibold'
-                : 'bg-slate-50 border-slate-200 text-slate-600'
-            }`}
-          >
-            <div>
-              <div className="text-[11px] sm:text-xs">Left Ear Wax</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500">£80 (Flat Fee)</div>
+          <div className="bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-800 text-[11px]">LEFT EAR (AS)</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                patient.leftEarWax === 0
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : patient.leftEarWax === 1
+                  ? 'bg-amber-100 text-amber-800'
+                  : patient.leftEarWax === 2
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-rose-100 text-rose-800'
+              }`}>
+                {patient.leftEarWax} – {EAR_WAX_LABELS[patient.leftEarWax]}
+              </span>
             </div>
-            <span className={`text-xs ${patient.leftEarWax ? 'text-amber-600' : 'text-slate-300'}`}>
-              ●
-            </span>
-          </button>
+
+            <div className="grid grid-cols-4 gap-1">
+              {WAX_LEVELS.map(({ level, label, activeClass }) => {
+                const isActive = patient.leftEarWax === level;
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => handleEarWaxChange('leftEarWax', level)}
+                    className={`py-1.5 px-1 rounded text-center transition border font-semibold text-[10px] ${
+                      isActive
+                        ? activeClass
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="font-bold">{level}</div>
+                    <div className="text-[9px] font-normal leading-tight">{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Right Ear Wax */}
-          <button
-            type="button"
-            onClick={() => handleToggleService('rightEarWax')}
-            className={`p-2 sm:p-2.5 rounded-md border text-left flex items-start justify-between transition min-h-[44px] ${
-              patient.rightEarWax
-                ? 'bg-amber-50 border-amber-400 text-amber-900 font-semibold'
-                : 'bg-slate-50 border-slate-200 text-slate-600'
-            }`}
-          >
-            <div>
-              <div className="text-[11px] sm:text-xs">Right Ear Wax</div>
-              <div className="text-[9px] sm:text-[10px] text-slate-500">£80 (Flat Fee)</div>
+          <div className="bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-800 text-[11px]">RIGHT EAR (AD)</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                patient.rightEarWax === 0
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : patient.rightEarWax === 1
+                  ? 'bg-amber-100 text-amber-800'
+                  : patient.rightEarWax === 2
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-rose-100 text-rose-800'
+              }`}>
+                {patient.rightEarWax} – {EAR_WAX_LABELS[patient.rightEarWax]}
+              </span>
             </div>
-            <span className={`text-xs ${patient.rightEarWax ? 'text-amber-600' : 'text-slate-300'}`}>
-              ●
-            </span>
-          </button>
+
+            <div className="grid grid-cols-4 gap-1">
+              {WAX_LEVELS.map(({ level, label, activeClass }) => {
+                const isActive = patient.rightEarWax === level;
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => handleEarWaxChange('rightEarWax', level)}
+                    className={`py-1.5 px-1 rounded text-center transition border font-semibold text-[10px] ${
+                      isActive
+                        ? activeClass
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="font-bold">{level}</div>
+                    <div className="text-[9px] font-normal leading-tight">{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
