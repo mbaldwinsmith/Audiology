@@ -204,12 +204,18 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
       </div>
 
       {/* Report Footer */}
-      <div className="border-t border-slate-300 pt-3 mt-4 text-[10px] text-slate-500 flex justify-between items-center">
-        <div>
-          <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span> | Reg No: {COMPANY_DETAILS.regNo} | {COMPANY_DETAILS.address}
+      <div className="border-t border-slate-200 pt-3 mt-auto text-[10px] text-slate-500 flex justify-between items-end">
+        <div className="space-y-0.5">
+          <div>
+            <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span>
+            <span className="text-slate-400 mx-1.5">•</span>
+            <span>Co. Reg: {COMPANY_DETAILS.regNo}</span>
+          </div>
+          <div className="text-slate-500">{COMPANY_DETAILS.address}</div>
         </div>
-        <div className="font-medium text-slate-600">
-          Tel: {COMPANY_DETAILS.phone} | {COMPANY_DETAILS.email}
+        <div className="text-right space-y-0.5 font-medium text-slate-600">
+          <div>Tel: <span className="text-slate-700 font-semibold">{COMPANY_DETAILS.phone}</span></div>
+          <div className="text-slate-500">{COMPANY_DETAILS.email}</div>
         </div>
       </div>
     </div>

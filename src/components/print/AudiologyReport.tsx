@@ -8,17 +8,22 @@ interface AudiologyReportProps {
 }
 
 export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => {
+  // Clean recommendations string if it duplicated notes
+  const displayRec = patient.recommendations
+    ? patient.recommendations.replace(/\s*Note:\s*.*$/i, '').trim()
+    : 'Resident comfortable. Care plan discussed with staff.';
+
   return (
     <div className="font-sans text-slate-800 text-xs">
       {/* PAGE 1: Resident Ear & Hearing Summary */}
       <div className="a4-page p-8 md:p-10 flex flex-col justify-between leading-relaxed">
         <div>
           {/* Header */}
-          <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3 mb-4">
+          <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3.5 mb-4.5">
             <div className="flex items-center gap-3">
               <img src="./logo.png" alt="EliteSight HomeCare" className="h-11 w-11 object-contain" />
               <div>
-                <h1 className="text-lg font-extrabold text-brand-navy uppercase tracking-tight">
+                <h1 className="text-lg font-extrabold text-brand-navy uppercase tracking-tight leading-tight">
                   Ear &amp; Hearing Care Summary
                 </h1>
                 <p className="text-[10px] text-slate-500 font-semibold tracking-wider">
@@ -27,68 +32,67 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
               </div>
             </div>
             <div className="text-right">
-              <span className="inline-block bg-brand-soft text-brand-navy border border-brand-soft-dark px-2.5 py-1 rounded font-mono font-bold text-xs">
+              <span className="inline-block bg-brand-soft text-brand-navy border border-brand-soft-dark px-3 py-1 rounded font-mono font-bold text-xs shadow-xs">
                 Ref: {patient.reportRef}
               </span>
             </div>
           </div>
 
           {/* Metadata Ribbon */}
-          <div className="bg-brand-soft border border-brand-soft-dark rounded-md px-3.5 py-2 mb-4 grid grid-cols-3 gap-2 text-[11px]">
-            <div>
+          <div className="bg-brand-soft border border-brand-soft-dark rounded-md px-4 py-2.5 mb-4.5 grid grid-cols-3 gap-2 text-[11px]">
+            <div className="text-left">
               <span className="text-slate-500">Care Home: </span>
               <strong className="text-brand-navy font-semibold">{patient.careHome}</strong>
             </div>
-            <div>
+            <div className="text-center">
               <span className="text-slate-500">Visit Date: </span>
               <strong className="text-brand-navy font-semibold">{patient.appointmentDate}</strong>
             </div>
-            <div>
+            <div className="text-right">
               <span className="text-slate-500">Audiologist: </span>
               <strong className="text-brand-navy font-semibold">{patient.audiologist}</strong>
             </div>
           </div>
 
           {/* Patient Info Grid */}
-          <div className="border border-slate-200 rounded-md p-3 bg-white mb-4 grid grid-cols-3 gap-y-2 gap-x-4 text-[11px]">
+          <div className="border border-slate-200 rounded-md p-3.5 bg-white mb-4.5 grid grid-cols-3 gap-y-3 gap-x-4 text-[11px]">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Resident Name</span>
-              <span className="font-bold text-slate-900 text-sm">{patient.residentFullName}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Resident Name</span>
+              <span className="font-bold text-slate-900 text-sm block">{patient.residentFullName}</span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Date of Birth</span>
-              <span className="font-semibold text-slate-700">{formatDobDisplay(patient.dob)}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Date of Birth</span>
+              <span className="font-semibold text-slate-700 block">{formatDobDisplay(patient.dob) || 'Not Provided'}</span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Visit Date</span>
-              <span className="font-semibold text-slate-700">{patient.appointmentDate}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Visit Date</span>
+              <span className="font-semibold text-slate-700 block">{patient.appointmentDate}</span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Report Reference</span>
-              <span className="font-mono text-brand-blue font-semibold">{patient.reportRef}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Report Reference</span>
+              <span className="font-mono text-brand-blue font-semibold block">{patient.reportRef}</span>
             </div>
             <div className="col-span-2">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Next Step</span>
-              <span className="inline-flex items-center gap-1.5 font-semibold text-brand-navy">
-                <span className="w-2 h-2 rounded-full bg-brand-blue"></span>
-                {patient.nextStep || 'Routine review in 12 months'}
-              </span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Next Step</span>
+              <div className="flex items-center gap-1.5 font-semibold text-brand-navy">
+                <span className="w-2 h-2 rounded-full bg-brand-blue flex-shrink-0"></span>
+                <span>{patient.nextStep || 'Routine review in 12 months'}</span>
+              </div>
             </div>
           </div>
 
           {/* Ear Check Findings (Left vs Right) */}
-          <div className="mb-4">
-            <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+          <div className="mb-4.5">
+            <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Ear Check Results</span>
               <span className="text-[10px] font-normal text-brand-soft">Visual Check</span>
             </div>
-            <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white grid grid-cols-2 gap-3">
+            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white grid grid-cols-2 gap-3.5">
               {/* Left Ear */}
               {(() => {
                 const isLeftClear = patient.leftEarWax === 0;
                 const isLeftMinor = patient.leftEarWax === 1;
                 const isLeftModerate = patient.leftEarWax === 2;
-                const isLeftSevere = patient.leftEarWax === 3;
                 const cardBg = isLeftClear
                   ? 'bg-slate-50/70 border-slate-200'
                   : isLeftMinor
@@ -104,12 +108,12 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   ? 'bg-orange-500'
                   : 'bg-rose-600';
                 const badgeClass = isLeftClear
-                  ? 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                   : isLeftMinor
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-amber-100 text-amber-800 border-amber-200'
                   : isLeftModerate
-                  ? 'bg-orange-100 text-orange-800'
-                  : 'bg-rose-100 text-rose-800';
+                  ? 'bg-orange-100 text-orange-800 border-orange-200'
+                  : 'bg-rose-100 text-rose-800 border-rose-200';
                 const label = isLeftClear
                   ? 'Canal Clear'
                   : isLeftMinor
@@ -119,17 +123,17 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   : 'Severe Ear Wax';
 
                 return (
-                  <div className={`p-3 rounded-md border ${cardBg}`}>
-                    <div className="flex items-center justify-between mb-1.5">
+                  <div className={`p-3 rounded-md border flex flex-col justify-between min-h-[90px] ${cardBg}`}>
+                    <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
                         LEFT EAR
                       </span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${badgeClass}`}>
                         {label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-700 leading-snug">
+                    <p className="text-[11px] text-slate-700 leading-snug flex-1">
                       {patient.leftEarFinding || 'Ear canal and eardrum checked.'}
                     </p>
                   </div>
@@ -141,7 +145,6 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 const isRightClear = patient.rightEarWax === 0;
                 const isRightMinor = patient.rightEarWax === 1;
                 const isRightModerate = patient.rightEarWax === 2;
-                const isRightSevere = patient.rightEarWax === 3;
                 const cardBg = isRightClear
                   ? 'bg-slate-50/70 border-slate-200'
                   : isRightMinor
@@ -157,12 +160,12 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   ? 'bg-orange-500'
                   : 'bg-rose-600';
                 const badgeClass = isRightClear
-                  ? 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                   : isRightMinor
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-amber-100 text-amber-800 border-amber-200'
                   : isRightModerate
-                  ? 'bg-orange-100 text-orange-800'
-                  : 'bg-rose-100 text-rose-800';
+                  ? 'bg-orange-100 text-orange-800 border-orange-200'
+                  : 'bg-rose-100 text-rose-800 border-rose-200';
                 const label = isRightClear
                   ? 'Canal Clear'
                   : isRightMinor
@@ -172,17 +175,17 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   : 'Severe Ear Wax';
 
                 return (
-                  <div className={`p-3 rounded-md border ${cardBg}`}>
-                    <div className="flex items-center justify-between mb-1.5">
+                  <div className={`p-3 rounded-md border flex flex-col justify-between min-h-[90px] ${cardBg}`}>
+                    <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
                         RIGHT EAR
                       </span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${badgeClass}`}>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${badgeClass}`}>
                         {label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-700 leading-snug">
+                    <p className="text-[11px] text-slate-700 leading-snug flex-1">
                       {patient.rightEarFinding || 'Ear canal and eardrum checked.'}
                     </p>
                   </div>
@@ -192,28 +195,36 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           </div>
 
           {/* Hearing Test Box */}
-          <div className="mb-4">
-            <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+          <div className="mb-4.5">
+            <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Hearing Assessment</span>
               <span className="text-[10px] font-normal text-brand-soft">
                 {patient.audiogram ? 'Full Hearing Test Completed' : patient.screening ? 'Routine Hearing Screening' : 'Ear Check Only'}
               </span>
             </div>
-            <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white">
-              <p className="text-[11px] text-slate-800 font-medium mb-2">
+            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white">
+              <p className="text-[11px] text-slate-800 font-medium mb-2.5">
                 {patient.hearingTestResult || 'Hearing and sound responses checked during visit.'}
               </p>
-              <div className="flex items-center gap-4 text-[11px]">
+              <div className="flex items-center gap-5 text-[11px]">
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold ${patient.screening ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                    {patient.screening ? '✓' : '–'}
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${patient.screening ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    {patient.screening ? (
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      '–'
+                    )}
                   </span>
-                  <span className="text-slate-700">Hearing Screening</span>
+                  <span className="text-slate-700 font-medium">Hearing Screening</span>
                 </div>
                 {patient.audiogram && (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full flex items-center justify-center text-[9px] font-bold bg-emerald-600 text-white">
-                      ✓
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-600 text-white">
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                     </span>
                     <span className="text-slate-700 font-medium">Full Hearing Test</span>
                   </div>
@@ -228,17 +239,18 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
           </div>
 
           {/* Summary & Recommendations */}
-          <div className="mb-4">
-            <div className="bg-brand-navy text-white px-3 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider">
+          <div className="mb-4.5">
+            <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider">
               <span>Summary &amp; Advice for Care Staff</span>
             </div>
-            <div className="border border-t-0 border-slate-200 rounded-b-md p-3 bg-white">
-              <p className="text-[11px] text-slate-700 leading-relaxed mb-2">
-                {patient.recommendations || 'Resident comfortable. Care plan discussed with staff.'}
+            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white space-y-2.5">
+              <p className="text-[11px] text-slate-700 leading-relaxed">
+                {displayRec}
               </p>
               {patient.notes && (
-                <div className="bg-slate-50 border-l-2 border-brand-blue p-2 text-[10px] text-slate-600 italic">
-                  <strong>Note:</strong> {patient.notes}
+                <div className="bg-slate-50 border-l-3 border-brand-blue p-2.5 rounded-r text-[10.5px] text-slate-600">
+                  <strong className="text-slate-700 font-semibold not-italic">Clinical Note:</strong>{' '}
+                  <span className="italic">{patient.notes}</span>
                 </div>
               )}
             </div>
@@ -246,7 +258,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
 
           {/* Conditional Earwax Preparation Block */}
           {patient.hasEarWax && (
-            <div className="mb-4 border-2 border-amber-300 bg-amber-50/80 rounded-md p-3">
+            <div className="mb-4.5 border-2 border-amber-300 bg-amber-50/80 rounded-md p-3.5">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-amber-800 font-extrabold text-xs uppercase tracking-wide">
                   ⚠️ 2-Week Olive Oil Ear Drops Routine
@@ -255,20 +267,26 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                   Care Staff Action
                 </span>
               </div>
-              <p className="text-[11px] text-amber-950 leading-snug">
+              <p className="text-[11px] text-amber-950 leading-relaxed">
                 To gently soften the ear wax before removal, please put <strong>2 to 3 drops of medicinal olive oil (or Earol spray)</strong> into the affected ear(s) <strong>twice a day for 14 days</strong>. Please do not use cotton buds in the ears.
               </p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-slate-300 pt-3 mt-4 text-[10px] text-slate-500 flex justify-between items-center">
-          <div>
-            <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span> | Reg No: {COMPANY_DETAILS.regNo} | {COMPANY_DETAILS.address}
+        {/* Structured 2-Line Footer */}
+        <div className="border-t border-slate-200 pt-3 mt-auto text-[10px] text-slate-500 flex justify-between items-end">
+          <div className="space-y-0.5">
+            <div>
+              <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span>
+              <span className="text-slate-400 mx-1.5">•</span>
+              <span>Co. Reg: {COMPANY_DETAILS.regNo}</span>
+            </div>
+            <div className="text-slate-500">{COMPANY_DETAILS.address}</div>
           </div>
-          <div className="font-medium text-slate-600">
-            Tel: {COMPANY_DETAILS.phone} | {COMPANY_DETAILS.email}
+          <div className="text-right space-y-0.5 font-medium text-slate-600">
+            <div>Tel: <span className="text-slate-700 font-semibold">{COMPANY_DETAILS.phone}</span></div>
+            <div className="text-slate-500">{COMPANY_DETAILS.email}</div>
           </div>
         </div>
       </div>
@@ -278,7 +296,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
         <div className="a4-page p-8 md:p-10 flex flex-col justify-between page-break leading-relaxed">
           <div>
             {/* Header */}
-            <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3 mb-4">
+            <div className="flex items-center justify-between border-b-2 border-brand-navy pb-3.5 mb-4.5">
               <div className="flex items-center gap-3">
                 <img src="./logo.png" alt="EliteSight HomeCare" className="h-10 w-10 object-contain" />
                 <div>
@@ -309,13 +327,19 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-slate-300 pt-3 mt-4 text-[10px] text-slate-500 flex justify-between items-center">
-            <div>
-              <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span> | Reg No: {COMPANY_DETAILS.regNo}
+          {/* Structured 2-Line Footer */}
+          <div className="border-t border-slate-200 pt-3 mt-auto text-[10px] text-slate-500 flex justify-between items-end">
+            <div className="space-y-0.5">
+              <div>
+                <span className="font-semibold text-slate-700">{COMPANY_DETAILS.name}</span>
+                <span className="text-slate-400 mx-1.5">•</span>
+                <span>Co. Reg: {COMPANY_DETAILS.regNo}</span>
+              </div>
+              <div className="text-slate-500">{COMPANY_DETAILS.address}</div>
             </div>
-            <div className="font-medium text-slate-600">
-              Page 2 of 2 (Hearing Chart Attachment)
+            <div className="text-right space-y-0.5 font-medium text-slate-600">
+              <div>Tel: <span className="text-slate-700 font-semibold">{COMPANY_DETAILS.phone}</span></div>
+              <div className="text-slate-500">Page 2 of 2 (Hearing Chart Attachment)</div>
             </div>
           </div>
         </div>
@@ -323,3 +347,4 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
     </div>
   );
 };
+
