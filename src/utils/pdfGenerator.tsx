@@ -121,12 +121,13 @@ export async function renderReactNodeToPdfBlob(node: React.ReactElement): Promis
   container.style.left = '0';
   container.style.top = '0';
   container.style.width = '794px';
-  container.style.height = '1123px';
+  container.style.minHeight = '1123px';
+  container.style.height = 'auto';
   container.style.background = '#ffffff';
   container.style.zIndex = '-9999';
   container.style.opacity = '0';
   container.style.pointerEvents = 'none';
-  container.style.overflow = 'hidden';
+  container.style.overflow = 'visible';
 
   document.body.appendChild(container);
 

@@ -728,7 +728,14 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  marginBottom: effectiveZoom < 1 ? `calc((1 - ${effectiveZoom}) * -950px)` : undefined,
+                  marginBottom: effectiveZoom < 1
+                    ? `calc((1 - ${effectiveZoom}) * -${
+                        (activeTab === 'care-home'
+                          ? Math.max(1, Math.ceil((summary.totalPatients || 1) / 16))
+                          : (activeTab === 'patient-report' && selectedPatient?.audiogram ? 2 : 1)
+                        ) * 950
+                      }px)`
+                    : undefined,
                 }}
               >
                 {activeTab === 'care-home' && <CareHomeReport summary={summary} />}
