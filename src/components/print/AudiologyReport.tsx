@@ -204,7 +204,13 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white">
               <p className="text-[11px] text-slate-800 font-medium mb-2.5">
-                {patient.hearingTestResult || 'Hearing and sound responses checked during visit.'}
+                {patient.hearingTestResult &&
+                patient.hearingTestResult !== 'Full hearing test completed.' &&
+                patient.hearingTestResult !== 'Full hearing test suggested.'
+                  ? patient.hearingTestResult
+                  : patient.audiogram
+                  ? 'Preliminary hearing screening completed, with evidence of hearing loss. Full hearing test suggested.'
+                  : patient.hearingTestResult || 'Hearing and sound responses checked during visit.'}
               </p>
               <div className="flex items-center gap-5 text-[11px]">
                 <div className="flex items-center gap-1.5">
