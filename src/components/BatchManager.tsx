@@ -79,7 +79,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
     summary.seenPatients[0]?.id || patients[0]?.id || ''
   );
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterType, setFilterType] = useState<'all' | 'seen' | 'unseen' | 'wax' | 'audiogram'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'seen' | 'unseen' | 'wax' | 'audiogram' | 'discounted'>('all');
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
   // Zoom & Viewport Scaling State
@@ -117,6 +117,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
     if (filterType === 'unseen') return !p.seen;
     if (filterType === 'wax') return p.hasEarWax;
     if (filterType === 'audiogram') return p.audiogram;
+    if (filterType === 'discounted') return p.seen && p.isHalfPrice;
     return true;
   });
 
@@ -363,7 +364,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
 
             {/* Filter Chips */}
             <div className="px-2.5 py-1.5 bg-slate-50/70 border-b border-slate-100 flex flex-wrap gap-1 text-[10px]">
-              {(['all', 'seen', 'unseen', 'wax', 'audiogram'] as const).map((ft) => (
+              {(['all', 'seen', 'unseen', 'wax', 'audiogram', 'discounted'] as const).map((ft) => (
                 <button
                   key={ft}
                   onClick={() => setFilterType(ft)}
@@ -373,7 +374,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                       : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  {ft === 'audiogram' ? 'Full Hearing Test' : ft}
+                  {ft === 'audiogram' ? 'Full Hearing Test' : ft === 'discounted' ? '50% Off' : ft}
                 </button>
               ))}
             </div>
@@ -393,10 +394,15 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                     }`}
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
                           {p.residentFullName}
                         </span>
+                        {p.seen && p.isHalfPrice && (
+                          <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.2 rounded border border-emerald-200">
+                            50% Off
+                          </span>
+                        )}
                         {!p.seen && (
                           <span className="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.2 rounded">
                             Unseen
@@ -407,7 +413,7 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                         {p.reportRef}{formatDobDisplay(p.dob) ? ` • DOB: ${formatDobDisplay(p.dob)}` : ''}
                       </div>
                       {p.seen && (
-                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1 flex-wrap">
                           {p.hasEarWax && <span className="text-amber-700 font-medium">Wax Removal</span>}
                           {p.hasEarWax && p.audiogram && <span>•</span>}
                           {p.audiogram && <span className="text-brand-blue font-medium">Full Hearing Test</span>}
@@ -417,7 +423,12 @@ export const BatchManager: React.FC<BatchManagerProps> = ({
                     </div>
                     <div className="text-right flex-shrink-0">
                       {p.seen ? (
-                        <span className="font-bold text-slate-800 text-xs">£{p.totalAmount.toFixed(2)}</span>
+                        <div>
+                          <span className="font-bold text-slate-800 text-xs">£{p.totalAmount.toFixed(2)}</span>
+                          {p.isHalfPrice && p.discountAmount ? (
+                            <span className="block text-[9px] text-emerald-600 font-semibold">-50%</span>
+                          ) : null}
+                        </div>
                       ) : (
                         <span className="text-[10px] text-slate-400 italic">Excluded</span>
                       )}

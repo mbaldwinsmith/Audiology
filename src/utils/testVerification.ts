@@ -9,7 +9,7 @@ import {
   formatDobDisplay,
 } from './cleaners';
 import { getCareHomeInitials, getPatientInitials, generateReportRef, generateInvoiceNo } from './hash';
-import { calculateLineItems, calculateTotalAmount } from './pricing';
+import { calculateLineItems, calculateTotalAmount, calculateGrossSubtotal, calculateDiscountAmount } from './pricing';
 import { parseAudiologyCsv, createNewPatient, generateCleanedCsv } from './csvParser';
 import { recalculateSummary } from './sessionHelper';
 import { SAMPLE_CSV_DATA } from './sampleData';
@@ -65,7 +65,7 @@ export async function runSelfVerification() {
   console.assert(noDobRef === 'CV-JS0101-A1', `Test 2.5 failed: Expected 'CV-JS0101-A1', got '${noDobRef}'`);
   console.log('✔ Phase 2 Deterministic Hashes & References Passed');
 
-  // Test 3: Pricing calculations (with 0..3 ear wax levels)
+  // Test 3: Pricing calculations (with 0..3 ear wax levels & 50% discount)
   // Screening only (0, 0 wax)
   const items1 = calculateLineItems(true, false, 0, 0);
   console.assert(calculateTotalAmount(items1) === 0, 'Test 3.1 failed: Screening should be £0');
@@ -95,7 +95,32 @@ export async function runSelfVerification() {
   const itemsMixed = calculateLineItems(true, false, 1, 2);
   console.assert(calculateTotalAmount(itemsMixed) === 80, 'Test 3.8 failed: Level 1 + Level 2 should trigger single ear removal');
   console.assert(itemsMixed.find((i) => i.id === 'item-wax')?.description === 'Ear Wax Removal - Right Ear', 'Test 3.9 failed: Expected unilateral Right Ear removal');
-  console.log('✔ Phase 3 Pricing & Automated Invoicing Rules Passed (Only 2 & 3 Trigger Removal)');
+
+  // Half-Price Discount Tests:
+  // 50% discount on Ear Wax Removal (£80 -> £40)
+  const itemsWaxHalf = calculateLineItems(true, false, 2, 0, true);
+  console.assert(calculateTotalAmount(itemsWaxHalf) === 40, `Test 3.10 failed: Wax half price should be £40, got ${calculateTotalAmount(itemsWaxHalf)}`);
+  console.assert(calculateGrossSubtotal(itemsWaxHalf) === 80, 'Test 3.11 failed: Wax gross subtotal should be £80');
+  console.assert(calculateDiscountAmount(itemsWaxHalf) === 40, 'Test 3.12 failed: Wax discount amount should be £40');
+  console.assert(Boolean(itemsWaxHalf.find((i) => i.id === 'item-discount-half')), 'Test 3.13 failed: Missing discount line item');
+
+  // 50% discount on Full Hearing Test (£50 -> £25)
+  const itemsTestHalf = calculateLineItems(true, true, 0, 0, true);
+  console.assert(calculateTotalAmount(itemsTestHalf) === 25, `Test 3.14 failed: Test half price should be £25, got ${calculateTotalAmount(itemsTestHalf)}`);
+  console.assert(calculateDiscountAmount(itemsTestHalf) === 25, 'Test 3.15 failed: Test discount amount should be £25');
+
+  // 50% discount on Combined Wax + Hearing Test (£130 -> £65)
+  const itemsCombinedHalf = calculateLineItems(true, true, 2, 3, true);
+  console.assert(calculateTotalAmount(itemsCombinedHalf) === 65, `Test 3.16 failed: Combined half price should be £65, got ${calculateTotalAmount(itemsCombinedHalf)}`);
+  console.assert(calculateGrossSubtotal(itemsCombinedHalf) === 130, 'Test 3.17 failed: Combined gross should be £130');
+  console.assert(calculateDiscountAmount(itemsCombinedHalf) === 65, 'Test 3.18 failed: Combined discount should be £65');
+
+  // 50% discount on complimentary screening (£0 -> £0)
+  const itemsScreeningHalf = calculateLineItems(true, false, 0, 0, true);
+  console.assert(calculateTotalAmount(itemsScreeningHalf) === 0, 'Test 3.19 failed: Screening half price should remain £0');
+  console.assert(calculateDiscountAmount(itemsScreeningHalf) === 0, 'Test 3.20 failed: Screening discount should be £0');
+
+  console.log('✔ Phase 3 Pricing & 50% Half-Price Discount Automated Rules Passed');
 
   // Test 4: Full CSV Parsing & Exclusion verification
   const parseRes = await parseAudiologyCsv(SAMPLE_CSV_DATA);
@@ -117,7 +142,7 @@ export async function runSelfVerification() {
   }
   console.log('✔ Phase 4 10-Patient CSV Parsing & Unseen Exclusion Rules Passed');
 
-  // Test 5: createNewPatient (Walk-in resident with EarWaxLevel)
+  // Test 5: createNewPatient (Walk-in resident with Half Price Discount)
   const walkIn = createNewPatient({
     careHome: 'Colne View Care Home',
     postCode: 'CO9 2FF',
@@ -131,7 +156,8 @@ export async function runSelfVerification() {
     audiogram: true,
     leftEarWax: 2,
     rightEarWax: 0,
-    notes: 'Mild tinnitus reported',
+    isHalfPrice: true,
+    notes: 'Mild tinnitus reported - 50% discount voucher applied',
     indexOffset: 10,
   });
   console.assert(walkIn.residentFullName === 'James Wilson', 'Test 5.1 failed: Full name');
@@ -139,9 +165,11 @@ export async function runSelfVerification() {
   console.assert(walkIn.invoiceNo === 'CV-JW1205-INV11', `Test 5.3 failed: Invoice no ${walkIn.invoiceNo}`);
   console.assert(walkIn.leftEarWax === 2, `Test 5.4 failed: Left ear wax expected 2, got ${walkIn.leftEarWax}`);
   console.assert(walkIn.rightEarWax === 0, `Test 5.5 failed: Right ear wax expected 0, got ${walkIn.rightEarWax}`);
-  console.assert(walkIn.totalAmount === 130, `Test 5.6 failed: Total amount expected 130, got ${walkIn.totalAmount}`);
-  console.assert(walkIn.lineItems.length === 3, `Test 5.7 failed: Expected 3 line items, got ${walkIn.lineItems.length}`);
-  console.log('✔ Phase 5 Walk-in Patient Creation Passed');
+  console.assert(walkIn.isHalfPrice === true, 'Test 5.6 failed: Expected isHalfPrice true');
+  console.assert(walkIn.discountAmount === 65, `Test 5.7 failed: Expected discount amount 65, got ${walkIn.discountAmount}`);
+  console.assert(walkIn.totalAmount === 65, `Test 5.8 failed: Total amount expected 65 with 50% discount, got ${walkIn.totalAmount}`);
+  console.assert(walkIn.lineItems.length === 4, `Test 5.9 failed: Expected 4 line items (screening, wax, test, discount), got ${walkIn.lineItems.length}`);
+  console.log('✔ Phase 5 Walk-in Patient Creation with Half-Price Discount Passed');
 
   // Test 6: recalculateSummary & Deletion
   const updatedPatients = [...parseRes.patients, walkIn];
@@ -162,9 +190,10 @@ export async function runSelfVerification() {
   console.assert(cleanedCsv.includes('James,Wilson'), 'Test 7.1 failed: Cleaned CSV should include new patient');
   console.assert(cleanedCsv.includes('CV-JW1205-A11'), 'Test 7.2 failed: Cleaned CSV should include report ref');
   console.assert(cleanedCsv.includes('CV-JW1205-INV11'), 'Test 7.3 failed: Cleaned CSV should include invoice no');
+  console.assert(cleanedCsv.includes('Half Price Discount'), 'Test 7.4 failed: Cleaned CSV should include Half Price Discount column');
   console.log('✔ Phase 7 Cleaned CSV Generation Passed');
 
-  // Test 8: Payment Tracking, Receipt Mode & Two-Way CSV Roundtrip
+  // Test 8: Payment Tracking, Receipt Mode & Two-Way CSV Roundtrip (including Half-Price)
   const paidPatient = {
     ...walkIn,
     isPaid: true,
@@ -174,7 +203,7 @@ export async function runSelfVerification() {
   };
   const testPatientsWithPayment = [paidPatient, ...parseRes.patients];
   const summaryWithPayment = recalculateSummary(testPatientsWithPayment, parseRes.careHomeSummary);
-  console.assert(summaryWithPayment?.totalPaidRevenue === 130, `Test 8.1 failed: Expected £130 paid revenue, got ${summaryWithPayment?.totalPaidRevenue}`);
+  console.assert(summaryWithPayment?.totalPaidRevenue === 65, `Test 8.1 failed: Expected £65 paid revenue, got ${summaryWithPayment?.totalPaidRevenue}`);
   console.assert(summaryWithPayment?.paidInvoicesCount === 1, `Test 8.2 failed: Expected 1 paid invoice, got ${summaryWithPayment?.paidInvoicesCount}`);
 
   // Test CSV export and re-import roundtrip
@@ -185,9 +214,11 @@ export async function runSelfVerification() {
   const reimportedRes = await parseAudiologyCsv(exportedWithPaymentCsv);
   const reimportedPaid = reimportedRes.patients.find((p) => p.residentFullName === 'James Wilson');
   console.assert(reimportedPaid?.isPaid === true, 'Test 8.5 failed: Re-imported patient should be marked as paid');
-  console.assert(reimportedPaid?.paymentMethod === 'SumUp Card Reader', 'Test 8.6 failed: Re-imported payment method mismatch');
-  console.assert(reimportedPaid?.paymentRef === 'SUMUP-839120', 'Test 8.7 failed: Re-imported payment ref mismatch');
-  console.log('✔ Phase 8 Payment Tracking & Two-Way CSV Persistence Passed');
+  console.assert(reimportedPaid?.isHalfPrice === true, 'Test 8.6 failed: Re-imported patient should have isHalfPrice true');
+  console.assert(reimportedPaid?.totalAmount === 65, `Test 8.7 failed: Re-imported patient totalAmount expected 65, got ${reimportedPaid?.totalAmount}`);
+  console.assert(reimportedPaid?.paymentMethod === 'SumUp Card Reader', 'Test 8.8 failed: Re-imported payment method mismatch');
+  console.assert(reimportedPaid?.paymentRef === 'SUMUP-839120', 'Test 8.9 failed: Re-imported payment ref mismatch');
+  console.log('✔ Phase 8 Payment Tracking, Half-Price & Two-Way CSV Persistence Passed');
 
   // Test 9: Web Crypto AES-GCM 256-bit Encrypted Session Auto-Save & Recovery
   await encryptSessionData(
@@ -210,7 +241,7 @@ export async function runSelfVerification() {
     `Test 9.3 failed: Expected ${testPatientsWithPayment.length} patients, got ${decryptedPayload?.patients.length}`
   );
   console.assert(
-    decryptedPayload?.summary?.totalPaidRevenue === 130,
+    decryptedPayload?.summary?.totalPaidRevenue === 65,
     'Test 9.4 failed: Decrypted summary revenue mismatch'
   );
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { PatientRow } from '../../types/audiology';
 import { COMPANY_DETAILS } from '../../utils/constants';
 import { formatDobDisplay } from '../../utils/cleaners';
+import { calculateGrossSubtotal, calculateDiscountAmount } from '../../utils/pricing';
 
 interface AudiologyInvoiceProps {
   patient: PatientRow;
@@ -9,6 +10,9 @@ interface AudiologyInvoiceProps {
 
 export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) => {
   const isPaid = Boolean(patient.isPaid);
+  const grossSubtotal = calculateGrossSubtotal(patient.lineItems);
+  const discountAmount = calculateDiscountAmount(patient.lineItems);
+  const hasDiscount = discountAmount > 0 || Boolean(patient.isHalfPrice);
 
   return (
     <div className="a4-page p-8 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
@@ -18,10 +22,15 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
           <div className="flex items-center gap-3">
             <img src="./logo.png" alt="EliteSight HomeCare" className="h-12 w-12 object-contain" />
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-black text-brand-navy uppercase tracking-tight">
                   {isPaid ? 'INVOICE & RECEIPT' : 'INVOICE'}
                 </h1>
+                {hasDiscount && (
+                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-[10px] px-2 py-0.5 rounded tracking-wider uppercase">
+                    50% DISCOUNT
+                  </span>
+                )}
                 {isPaid && (
                   <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded tracking-wider uppercase">
                     PAID
@@ -102,19 +111,44 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
             </thead>
             <tbody className="divide-y divide-slate-100">
               {patient.lineItems.length > 0 ? (
-                patient.lineItems.map((item, idx) => (
-                  <tr key={item.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                    <td className="py-2.5 px-3.5">
-                      <div className="font-semibold text-slate-800">{item.description}</div>
-                      <div className="text-[10px] text-slate-400">Clinical reference: {patient.reportRef}</div>
-                    </td>
-                    <td className="py-2.5 px-3 text-center text-slate-700">{item.quantity}</td>
-                    <td className="py-2.5 px-3 text-center text-slate-500">{item.unit}</td>
-                    <td className="py-2.5 px-3 text-right font-medium text-slate-700">£{item.unitPrice.toFixed(2)}</td>
-                    <td className="py-2.5 px-3 text-center text-slate-500">{item.vatRate}%</td>
-                    <td className="py-2.5 px-3.5 text-right font-bold text-slate-900">£{item.amount.toFixed(2)}</td>
-                  </tr>
-                ))
+                patient.lineItems.map((item, idx) => {
+                  const isDiscountItem = item.amount < 0;
+                  return (
+                    <tr
+                      key={item.id || idx}
+                      className={
+                        isDiscountItem
+                          ? 'bg-emerald-50/50 font-medium'
+                          : idx % 2 === 0
+                          ? 'bg-white'
+                          : 'bg-slate-50/60'
+                      }
+                    >
+                      <td className="py-2.5 px-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className={isDiscountItem ? 'font-bold text-emerald-900' : 'font-semibold text-slate-800'}>
+                            {item.description}
+                          </span>
+                          {isDiscountItem && (
+                            <span className="text-[9px] bg-emerald-600 text-white font-black px-1.5 py-0.2 rounded uppercase">
+                              50% Off
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400">Clinical reference: {patient.reportRef}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-center text-slate-700">{item.quantity}</td>
+                      <td className="py-2.5 px-3 text-center text-slate-500">{item.unit}</td>
+                      <td className="py-2.5 px-3 text-right font-medium text-slate-700">
+                        {item.unitPrice < 0 ? `-£${Math.abs(item.unitPrice).toFixed(2)}` : `£${item.unitPrice.toFixed(2)}`}
+                      </td>
+                      <td className="py-2.5 px-3 text-center text-slate-500">{item.vatRate}%</td>
+                      <td className={`py-2.5 px-3.5 text-right font-bold ${isDiscountItem ? 'text-emerald-700' : 'text-slate-900'}`}>
+                        {item.amount < 0 ? `-£${Math.abs(item.amount).toFixed(2)}` : `£${item.amount.toFixed(2)}`}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={6} className="py-4 text-center text-slate-400 italic">
@@ -176,9 +210,15 @@ export const AudiologyInvoice: React.FC<AudiologyInvoiceProps> = ({ patient }) =
           <div className="border border-brand-navy/20 rounded-md overflow-hidden bg-white">
             <div className="p-3 space-y-1.5 text-[11px] border-b border-slate-100">
               <div className="flex justify-between text-slate-600">
-                <span>Subtotal:</span>
-                <span className="font-semibold text-slate-800">£{patient.totalAmount.toFixed(2)}</span>
+                <span>Services Subtotal:</span>
+                <span className="font-semibold text-slate-800">£{grossSubtotal.toFixed(2)}</span>
               </div>
+              {hasDiscount && discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-semibold">
+                  <span>50% Half-Price Discount:</span>
+                  <span>-£{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-600">
                 <span>VAT (0% - Medical Exemption):</span>
                 <span className="font-semibold text-slate-800">£0.00</span>

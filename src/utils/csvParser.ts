@@ -16,7 +16,7 @@ import {
   PLACEHOLDER_DOB,
 } from './cleaners';
 import { generateReportRef, generateInvoiceNo, getCareHomeInitials, getPatientInitials } from './hash';
-import { calculateLineItems, calculateTotalAmount } from './pricing';
+import { calculateLineItems, calculateTotalAmount, calculateDiscountAmount } from './pricing';
 import { CSV_REQUIRED_COLUMNS, PRICING } from './constants';
 
 /**
@@ -182,6 +182,19 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const rightWaxRaw = getRowValue(row, 'Right Ear Wax', matched);
           const notesRaw = getRowValue(row, 'Notes', matched);
 
+          // Half-Price Discount Ingestion
+          const halfPriceRaw =
+            getRowValue(row, 'Half Price Discount', matched) ||
+            getRowValue(row, 'Half Price?', matched) ||
+            getRowValue(row, 'Half Price', matched) ||
+            getRowValue(row, 'Discount?', matched) ||
+            getRowValue(row, '50% Discount', matched) ||
+            getRowValue(row, 'Discount', matched);
+          const isHalfPrice =
+            parseBoolean(halfPriceRaw) ||
+            halfPriceRaw.toLowerCase().includes('half') ||
+            halfPriceRaw.toLowerCase().includes('50%');
+
           // Optional Payment Ingestion (from previously exported cleaned CSVs)
           const paymentStatusRaw = getRowValue(row, 'Payment Status', matched) || getRowValue(row, 'Paid?', matched);
           const isPaid =
@@ -231,8 +244,9 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
           const invoiceNo = generateInvoiceNo(careHome, firstName, surname, dob, index + 1);
           const dueDate = addDaysToDate(appointmentDate, PRICING.PAYMENT_TERMS_DAYS);
 
-          const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax) : [];
+          const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax, isHalfPrice) : [];
           const totalAmount = calculateTotalAmount(lineItems);
+          const discountAmount = isHalfPrice ? calculateDiscountAmount(lineItems) : 0;
 
           const clinicalDefaults = generateDefaultClinicalFindings(
             leftEarWax,
@@ -267,6 +281,8 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
             dueDate,
             lineItems,
             totalAmount,
+            isHalfPrice: seen ? isHalfPrice : false,
+            discountAmount: seen ? discountAmount : 0,
             isPaid: seen ? isPaid : false,
             paymentMethod: seen && isPaid ? paymentMethod : '',
             paymentDate: seen && isPaid ? paymentDate || appointmentDate : '',
@@ -375,6 +391,7 @@ export interface NewPatientInput {
   audiogram: boolean;
   leftEarWax: EarWaxLevel;
   rightEarWax: EarWaxLevel;
+  isHalfPrice?: boolean;
   isPaid?: boolean;
   paymentMethod?: string;
   paymentDate?: string;
@@ -401,6 +418,7 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
   const leftEarWax = input.leftEarWax;
   const rightEarWax = input.rightEarWax;
   const hasEarWax = leftEarWax >= 2 || rightEarWax >= 2;
+  const isHalfPrice = seen ? Boolean(input.isHalfPrice) : false;
   const isPaid = seen ? Boolean(input.isPaid) : false;
   const paymentMethod = isPaid ? input.paymentMethod || 'SumUp Card Reader' : '';
   const paymentDate = isPaid ? normalizeDate(input.paymentDate || appointmentDate) : '';
@@ -412,8 +430,9 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
   const invoiceNo = generateInvoiceNo(careHome, firstName, surname, dob, idx);
   const dueDate = addDaysToDate(appointmentDate, PRICING.PAYMENT_TERMS_DAYS);
 
-  const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax) : [];
+  const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax, isHalfPrice) : [];
   const totalAmount = calculateTotalAmount(lineItems);
+  const discountAmount = isHalfPrice ? calculateDiscountAmount(lineItems) : 0;
 
   const clinicalDefaults = generateDefaultClinicalFindings(
     leftEarWax,
@@ -448,6 +467,8 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
     dueDate,
     lineItems,
     totalAmount,
+    isHalfPrice,
+    discountAmount,
     isPaid,
     paymentMethod,
     paymentDate,
@@ -488,6 +509,8 @@ export function generateCleanedCsv(
     if (includeExtendedColumns) {
       baseRow['Report Ref'] = p.reportRef;
       baseRow['Invoice No'] = p.invoiceNo;
+      baseRow['Half Price Discount'] = p.seen ? (p.isHalfPrice ? 'Yes' : 'No') : 'No';
+      baseRow['Discount Amount (GBP)'] = p.seen && p.isHalfPrice && p.discountAmount ? `£${p.discountAmount.toFixed(2)}` : '£0.00';
       baseRow['Total Amount (GBP)'] = p.seen ? `£${p.totalAmount.toFixed(2)}` : '£0.00';
       baseRow['Payment Status'] = p.seen ? (p.isPaid ? 'Paid' : 'Unpaid') : 'N/A';
       baseRow['Payment Method'] = p.seen && p.isPaid ? p.paymentMethod || '' : '';

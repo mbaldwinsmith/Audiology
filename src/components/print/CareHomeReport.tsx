@@ -85,6 +85,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     if (p.hasEarWax) services.push('Wax Removal (£80)');
                     if (p.audiogram) services.push('Full Hearing Test (£50)');
                     if (p.screening && !p.hasEarWax && !p.audiogram) services.push('Hearing Screening (Free)');
+                    if (p.isHalfPrice) services.push('50% Off');
                     const servicesText = services.length > 0 ? services.join(', ') : 'Ear & Hearing Visit';
 
                     return (

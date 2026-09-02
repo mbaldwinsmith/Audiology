@@ -15,6 +15,7 @@ import {
   Receipt,
   CheckCircle2,
   AlertCircle,
+  Percent,
 } from 'lucide-react';
 
 interface AddPatientModalProps {
@@ -55,6 +56,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   const [audiogram, setAudiogram] = useState(false);
   const [leftEarWax, setLeftEarWax] = useState<EarWaxLevel>(0);
   const [rightEarWax, setRightEarWax] = useState<EarWaxLevel>(0);
+  const [isHalfPrice, setIsHalfPrice] = useState(false);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +73,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   if (!isOpen) return null;
 
   // Calculate live estimated total for modal display
-  const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax) : [];
+  const lineItems = seen ? calculateLineItems(screening, audiogram, leftEarWax, rightEarWax, isHalfPrice) : [];
   const estimatedTotal = calculateTotalAmount(lineItems);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -102,6 +104,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
         audiogram: seen ? audiogram : false,
         leftEarWax: seen ? leftEarWax : 0,
         rightEarWax: seen ? rightEarWax : 0,
+        isHalfPrice: seen ? isHalfPrice : false,
         notes,
         indexOffset: existingCount,
       });
@@ -117,6 +120,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       setAudiogram(false);
       setLeftEarWax(0);
       setRightEarWax(0);
+      setIsHalfPrice(false);
       setNotes('');
       setError(null);
       onClose();
@@ -426,6 +430,46 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* 50% Half-Price Discount Toggle */}
+              <div className={`p-2.5 rounded-lg border transition ${
+                isHalfPrice
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-md ${isHalfPrice ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                      <Percent className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                        <span>50% Half Price Discount</span>
+                        {isHalfPrice && (
+                          <span className="text-[9px] bg-emerald-600 text-white font-bold px-1.5 py-0.2 rounded">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        Applies 50% reduction to billable treatments (Wax Removal &amp; Full Hearing Test)
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsHalfPrice(!isHalfPrice)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition border ${
+                      isHalfPrice
+                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    {isHalfPrice ? '50% Applied' : 'Apply 50% Off'}
+                  </button>
                 </div>
               </div>
             </div>

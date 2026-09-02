@@ -55,6 +55,8 @@ export interface PatientRow {
   dueDate: string; // DD/MM/YYYY (appointmentDate + 7 days)
   lineItems: InvoiceLineItem[];
   totalAmount: number; // in GBP (£)
+  isHalfPrice?: boolean; // When true, applies 50% discount to billable services
+  discountAmount?: number; // Amount saved in GBP (£)
   isPaid?: boolean;
   paymentMethod?: string; // 'SumUp Card Reader' | 'BACS Bank Transfer' | 'Cash' | 'Cheque' | 'Care Home Account' | string
   paymentDate?: string; // DD/MM/YYYY

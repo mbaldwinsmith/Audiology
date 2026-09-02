@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { PatientRow, EarWaxLevel, EAR_WAX_LABELS } from '../types/audiology';
-import { calculateLineItems, calculateTotalAmount } from '../utils/pricing';
+import { calculateLineItems, calculateTotalAmount, calculateGrossSubtotal, calculateDiscountAmount } from '../utils/pricing';
 import { AudiogramUploader } from './AudiogramUploader';
-import { Edit3, FileText, Receipt, Trash2, CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { Edit3, FileText, Receipt, Trash2, CreditCard, CheckCircle2, Clock, Percent, Sparkles } from 'lucide-react';
 import { exportPatientReportPdf, exportPatientInvoicePdf } from '../utils/pdfGenerator';
 
 interface PatientEditorProps {
@@ -51,9 +51,11 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       updated.screening,
       updated.audiogram,
       updated.leftEarWax,
-      updated.rightEarWax
+      updated.rightEarWax,
+      updated.isHalfPrice
     );
     updated.totalAmount = calculateTotalAmount(updated.lineItems);
+    updated.discountAmount = updated.isHalfPrice ? calculateDiscountAmount(updated.lineItems) : 0;
     onUpdatePatient(updated);
   };
 
@@ -64,9 +66,26 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       updated.screening,
       updated.audiogram,
       updated.leftEarWax,
-      updated.rightEarWax
+      updated.rightEarWax,
+      updated.isHalfPrice
     );
     updated.totalAmount = calculateTotalAmount(updated.lineItems);
+    updated.discountAmount = updated.isHalfPrice ? calculateDiscountAmount(updated.lineItems) : 0;
+    onUpdatePatient(updated);
+  };
+
+  const handleToggleHalfPrice = () => {
+    const nextHalfPrice = !patient.isHalfPrice;
+    const updated = { ...patient, isHalfPrice: nextHalfPrice };
+    updated.lineItems = calculateLineItems(
+      updated.screening,
+      updated.audiogram,
+      updated.leftEarWax,
+      updated.rightEarWax,
+      nextHalfPrice
+    );
+    updated.totalAmount = calculateTotalAmount(updated.lineItems);
+    updated.discountAmount = nextHalfPrice ? calculateDiscountAmount(updated.lineItems) : 0;
     onUpdatePatient(updated);
   };
 
@@ -90,6 +109,9 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
       setShowDeleteConfirm(false);
     }
   };
+
+  const grossSubtotal = calculateGrossSubtotal(patient.lineItems);
+  const potentialSavings = Number((grossSubtotal * 0.5).toFixed(2));
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-3.5 sm:p-5 shadow-sm space-y-4 text-xs">
@@ -285,6 +307,63 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
                 );
               })}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 50% Half-Price Discount Control Card */}
+      <div className={`border rounded-lg p-3 sm:p-3.5 space-y-2.5 transition ${
+        patient.isHalfPrice
+          ? 'bg-emerald-50/80 border-emerald-300 ring-1 ring-emerald-400/40'
+          : 'bg-slate-50/80 border-slate-200'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <label className="font-bold text-slate-800 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                <Percent className={`w-3.5 h-3.5 ${patient.isHalfPrice ? 'text-emerald-600' : 'text-brand-blue'}`} />
+                <span>Half Price Discount (50% Off)</span>
+              </label>
+              {patient.isHalfPrice && (
+                <span className="bg-emerald-600 text-white font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>50% Active</span>
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
+              Apply a 50% half-priced discount on billable services (Wax Removal &amp; Full Hearing Test).
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleToggleHalfPrice}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 shadow-xs ${
+              patient.isHalfPrice
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+            }`}
+          >
+            <Percent className="w-3.5 h-3.5" />
+            <span>{patient.isHalfPrice ? 'Remove 50% Discount' : 'Apply 50% Half Price'}</span>
+          </button>
+        </div>
+
+        {/* Financial Breakdown Ribbon */}
+        <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+          <div className="flex items-center gap-3 text-slate-600">
+            <span>
+              Service Subtotal: <strong className="text-slate-800">£{grossSubtotal.toFixed(2)}</strong>
+            </span>
+            {patient.isHalfPrice && (
+              <span className="text-emerald-700 font-semibold">
+                Discount: <strong>-£{(patient.discountAmount || 0).toFixed(2)}</strong>
+              </span>
+            )}
+          </div>
+          <div className="font-bold text-brand-navy text-xs">
+            Net Invoiced: <span className="text-sm font-extrabold text-brand-blue">£{patient.totalAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>

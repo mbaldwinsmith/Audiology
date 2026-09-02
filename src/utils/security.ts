@@ -22,6 +22,50 @@ export interface EncryptedSessionPayload {
   savedAt: number;
 }
 
+// Memory fallback for Node.js test environments
+const memoryStorage: Record<string, string> = {};
+
+function safeGetItem(storageType: 'local' | 'session', key: string): string | null {
+  try {
+    if (typeof window !== 'undefined') {
+      const storage = storageType === 'local' ? window.localStorage : window.sessionStorage;
+      if (storage) return storage.getItem(key);
+    }
+  } catch {
+    // Fallback to memory
+  }
+  return memoryStorage[`${storageType}:${key}`] ?? null;
+}
+
+function safeSetItem(storageType: 'local' | 'session', key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined') {
+      const storage = storageType === 'local' ? window.localStorage : window.sessionStorage;
+      if (storage) {
+        storage.setItem(key, value);
+        return;
+      }
+    }
+  } catch {
+    // Fallback to memory
+  }
+  memoryStorage[`${storageType}:${key}`] = value;
+}
+
+function safeRemoveItem(storageType: 'local' | 'session', key: string): void {
+  try {
+    if (typeof window !== 'undefined') {
+      const storage = storageType === 'local' ? window.localStorage : window.sessionStorage;
+      if (storage) {
+        storage.removeItem(key);
+      }
+    }
+  } catch {
+    // Fallback to memory
+  }
+  delete memoryStorage[`${storageType}:${key}`];
+}
+
 /**
  * Converts ArrayBuffer/Uint8Array to hex string
  */
@@ -54,11 +98,11 @@ export async function computeHash(pin: string, salt: string): Promise<string> {
  * Initializes storage with default PIN if not set or migrating from previous default
  */
 export async function initializePinStorage(): Promise<void> {
-  const existingHash = localStorage.getItem(PIN_STORAGE_KEY);
+  const existingHash = safeGetItem('local', PIN_STORAGE_KEY);
   if (!existingHash) {
     const defaultHash = await computeHash(DEFAULT_PIN, DEFAULT_SALT);
-    localStorage.setItem(PIN_STORAGE_KEY, defaultHash);
-    localStorage.setItem(SALT_STORAGE_KEY, DEFAULT_SALT);
+    safeSetItem('local', PIN_STORAGE_KEY, defaultHash);
+    safeSetItem('local', SALT_STORAGE_KEY, DEFAULT_SALT);
   }
 }
 
@@ -68,9 +112,9 @@ export async function initializePinStorage(): Promise<void> {
 export async function verifyPin(enteredPin: string): Promise<{ success: boolean; remainingAttempts: number; isLockedOut: boolean }> {
   await initializePinStorage();
 
-  const storedHash = localStorage.getItem(PIN_STORAGE_KEY) || '';
-  const storedSalt = localStorage.getItem(SALT_STORAGE_KEY) || DEFAULT_SALT;
-  const failedAttempts = parseInt(localStorage.getItem(ATTEMPTS_STORAGE_KEY) || '0', 10);
+  const storedHash = safeGetItem('local', PIN_STORAGE_KEY) || '';
+  const storedSalt = safeGetItem('local', SALT_STORAGE_KEY) || DEFAULT_SALT;
+  const failedAttempts = parseInt(safeGetItem('local', ATTEMPTS_STORAGE_KEY) || '0', 10);
 
   if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
     return { success: false, remainingAttempts: 0, isLockedOut: true };
@@ -80,11 +124,11 @@ export async function verifyPin(enteredPin: string): Promise<{ success: boolean;
 
   if (enteredHash === storedHash) {
     // Reset failed attempts on success
-    localStorage.setItem(ATTEMPTS_STORAGE_KEY, '0');
+    safeSetItem('local', ATTEMPTS_STORAGE_KEY, '0');
     return { success: true, remainingAttempts: MAX_FAILED_ATTEMPTS, isLockedOut: false };
   } else {
     const nextAttempts = failedAttempts + 1;
-    localStorage.setItem(ATTEMPTS_STORAGE_KEY, nextAttempts.toString());
+    safeSetItem('local', ATTEMPTS_STORAGE_KEY, nextAttempts.toString());
     const remaining = Math.max(0, MAX_FAILED_ATTEMPTS - nextAttempts);
     return {
       success: false,
@@ -99,7 +143,7 @@ export async function verifyPin(enteredPin: string): Promise<{ success: boolean;
  */
 export async function updatePin(currentPin: string, newPin: string): Promise<{ success: boolean; message: string }> {
   if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
-    return { success: false, message: 'New PIN must be exactly 4 digits.' };
+    return { success: false, message: 'New PIN must be exactly 4 numeric digits.' };
   }
 
   const verification = await verifyPin(currentPin);
@@ -107,15 +151,12 @@ export async function updatePin(currentPin: string, newPin: string): Promise<{ s
     return { success: false, message: 'Current PIN is incorrect.' };
   }
 
-  // Generate random salt for the new PIN
-  const randomSalt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  const newSalt = `elitesight_salt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const newHash = await computeHash(newPin, newSalt);
 
-  const newHash = await computeHash(newPin, randomSalt);
-  localStorage.setItem(PIN_STORAGE_KEY, newHash);
-  localStorage.setItem(SALT_STORAGE_KEY, randomSalt);
-  localStorage.setItem(ATTEMPTS_STORAGE_KEY, '0');
+  safeSetItem('local', PIN_STORAGE_KEY, newHash);
+  safeSetItem('local', SALT_STORAGE_KEY, newSalt);
+  safeSetItem('local', ATTEMPTS_STORAGE_KEY, '0');
 
   return { success: true, message: 'PIN updated successfully.' };
 }
@@ -124,15 +165,15 @@ export async function updatePin(currentPin: string, newPin: string): Promise<{ s
  * Resets failed attempts count (e.g. after full session wipe)
  */
 export function resetFailedAttempts(): void {
-  localStorage.setItem(ATTEMPTS_STORAGE_KEY, '0');
+  safeSetItem('local', ATTEMPTS_STORAGE_KEY, '0');
 }
 
 /**
- * Derives a 256-bit AES-GCM key from PIN + salt using PBKDF2 (100,000 iterations)
+ * Derives a 256-bit AES-GCM CryptoKey from PIN and salt using PBKDF2
  */
 async function deriveAesKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
   const encoder = new TextEncoder();
-  const baseKey = await crypto.subtle.importKey(
+  const keyMaterial = await crypto.subtle.importKey(
     'raw',
     encoder.encode(pin),
     { name: 'PBKDF2' },
@@ -147,7 +188,7 @@ async function deriveAesKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
       iterations: 100000,
       hash: 'SHA-256',
     },
-    baseKey,
+    keyMaterial,
     { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt', 'decrypt']
@@ -159,8 +200,8 @@ async function deriveAesKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
  */
 export function hasEncryptedSession(): boolean {
   return Boolean(
-    sessionStorage.getItem(ENCRYPTED_SESSION_KEY) ||
-    localStorage.getItem(ENCRYPTED_SESSION_KEY)
+    safeGetItem('session', ENCRYPTED_SESSION_KEY) ||
+    safeGetItem('local', ENCRYPTED_SESSION_KEY)
   );
 }
 
@@ -191,8 +232,8 @@ export async function encryptSessionData(payload: EncryptedSessionPayload, pin: 
       savedAt: payload.savedAt,
     });
 
-    sessionStorage.setItem(ENCRYPTED_SESSION_KEY, packageData);
-    localStorage.setItem(ENCRYPTED_SESSION_KEY, packageData);
+    safeSetItem('session', ENCRYPTED_SESSION_KEY, packageData);
+    safeSetItem('local', ENCRYPTED_SESSION_KEY, packageData);
   } catch (err) {
     console.error('Failed to encrypt session:', err);
   }
@@ -203,41 +244,39 @@ export async function encryptSessionData(payload: EncryptedSessionPayload, pin: 
  */
 export async function decryptSessionData(pin: string): Promise<EncryptedSessionPayload | null> {
   const rawPackage =
-    sessionStorage.getItem(ENCRYPTED_SESSION_KEY) ||
-    localStorage.getItem(ENCRYPTED_SESSION_KEY);
+    safeGetItem('session', ENCRYPTED_SESSION_KEY) ||
+    safeGetItem('local', ENCRYPTED_SESSION_KEY);
 
   if (!rawPackage || !pin) return null;
 
   try {
-    const { salt, iv, ciphertext } = JSON.parse(rawPackage);
-    const saltBuffer = hexToBuffer(salt);
-    const ivBuffer = hexToBuffer(iv);
-    const ciphertextBuffer = hexToBuffer(ciphertext);
+    const parsed = JSON.parse(rawPackage);
+    const salt = hexToBuffer(parsed.salt);
+    const iv = hexToBuffer(parsed.iv);
+    const ciphertext = hexToBuffer(parsed.ciphertext);
 
-    const key = await deriveAesKey(pin, saltBuffer);
-
+    const key = await deriveAesKey(pin, salt);
     const decryptedBuffer = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: ivBuffer as unknown as BufferSource },
+      { name: 'AES-GCM', iv: iv as unknown as BufferSource },
       key,
-      ciphertextBuffer as unknown as BufferSource
+      ciphertext as unknown as BufferSource
     );
 
     const decoder = new TextDecoder();
-    const jsonString = decoder.decode(decryptedBuffer);
-    return JSON.parse(jsonString) as EncryptedSessionPayload;
-  } catch (err) {
-    // Decryption failed (e.g. incorrect PIN or corrupted data)
+    const jsonStr = decoder.decode(decryptedBuffer);
+    return JSON.parse(jsonStr) as EncryptedSessionPayload;
+  } catch {
+    // Return null if wrong PIN or decryption failed
     return null;
   }
 }
 
 /**
- * Purges encrypted session from all browser storage (GDPR Zero-Retention)
+ * Clears any encrypted session data completely (GDPR Zero Retention)
  */
 export function clearEncryptedSession(): void {
-  sessionStorage.removeItem(ENCRYPTED_SESSION_KEY);
-  localStorage.removeItem(ENCRYPTED_SESSION_KEY);
+  safeRemoveItem('session', ENCRYPTED_SESSION_KEY);
+  safeRemoveItem('local', ENCRYPTED_SESSION_KEY);
 }
 
 export { INACTIVITY_TIMEOUT_MS, MAX_FAILED_ATTEMPTS, DEFAULT_PIN };
-
