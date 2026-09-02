@@ -91,10 +91,10 @@ export async function runSelfVerification() {
   console.assert(calculateTotalAmount(itemsMinor) === 0, 'Test 3.6 failed: Minor wax (level 1) should not trigger removal');
   console.assert(itemsMinor.length === 1 && itemsMinor[0].id === 'item-screening', 'Test 3.7 failed: Minor wax should only have screening');
 
-  // Mixed levels (level 1 left [no removal], level 2 right [removal]) - Should trigger single Right Ear removal
+  // Mixed levels (level 1 left [no removal], level 2 right [removal]) - Should trigger single Ear Wax Removal entry
   const itemsMixed = calculateLineItems(true, false, 1, 2);
   console.assert(calculateTotalAmount(itemsMixed) === 80, 'Test 3.8 failed: Level 1 + Level 2 should trigger single ear removal');
-  console.assert(itemsMixed.find((i) => i.id === 'item-wax')?.description === 'Ear Wax Removal - Right Ear', 'Test 3.9 failed: Expected unilateral Right Ear removal');
+  console.assert(itemsMixed.find((i) => i.id === 'item-wax')?.description === 'Ear Wax Removal', 'Test 3.9 failed: Expected Ear Wax Removal');
 
   // Half-Price Discount Tests:
   // 50% discount on Ear Wax Removal (£80 -> £40)

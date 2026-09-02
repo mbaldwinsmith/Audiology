@@ -22,18 +22,9 @@ export function calculateLineItems(
   const hasWaxRemoval = hasLeft || hasRight;
 
   if (hasWaxRemoval) {
-    let waxDesc = 'Ear Wax Removal (Gentle Cleaning)';
-    if (hasLeft && hasRight) {
-      waxDesc = 'Ear Wax Removal - Both Ears';
-    } else if (hasLeft) {
-      waxDesc = 'Ear Wax Removal - Left Ear';
-    } else if (hasRight) {
-      waxDesc = 'Ear Wax Removal - Right Ear';
-    }
-
     items.push({
       id: 'item-wax',
-      description: waxDesc,
+      description: 'Ear Wax Removal',
       quantity: 1,
       unit: 'Service',
       unitPrice: PRICING.EAR_WAX_REMOVAL,
