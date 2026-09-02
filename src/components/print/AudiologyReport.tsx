@@ -62,7 +62,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Date of Birth</span>
-              <span className="font-semibold text-slate-700 block">{formatDobDisplay(patient.dob) || 'Not Provided'}</span>
+              <span className="font-semibold text-slate-700 block">{formatDobDisplay(patient.dob)}</span>
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Visit Date</span>
