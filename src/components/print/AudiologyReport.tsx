@@ -249,16 +249,10 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider">
               <span>Summary &amp; Advice for Care Staff</span>
             </div>
-            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white space-y-2.5">
+            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white">
               <p className="text-[11px] text-slate-700 leading-relaxed">
                 {displayRec}
               </p>
-              {patient.notes && (
-                <div className="bg-slate-50 border-l-3 border-brand-blue p-2.5 rounded-r text-[10.5px] text-slate-600">
-                  <strong className="text-slate-700 font-semibold not-italic">Clinical Note:</strong>{' '}
-                  <span className="italic">{patient.notes}</span>
-                </div>
-              )}
             </div>
           </div>
 
