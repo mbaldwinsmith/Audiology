@@ -106,7 +106,7 @@ function generateDefaultClinicalFindings(
 
   let hearingTestResult = 'Ear check and hearing test completed.';
   if (audiogram) {
-    hearingTestResult = 'Full hearing test completed.';
+    hearingTestResult = 'Full hearing test suggested.';
   } else if (screening) {
     hearingTestResult = 'Hearing screening completed. Good hearing response detected.';
   }

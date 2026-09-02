@@ -199,7 +199,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Hearing Assessment</span>
               <span className="text-[10px] font-normal text-brand-soft">
-                {patient.audiogram ? 'Full Hearing Test Completed' : patient.screening ? 'Routine Hearing Screening' : 'Ear Check Only'}
+                {patient.audiogram ? 'Full Hearing Test Suggested' : patient.screening ? 'Routine Hearing Screening' : 'Ear Check Only'}
               </span>
             </div>
             <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white">
