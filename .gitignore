@@ -1,1 +1,23 @@
 node_modules
+dist
+dist-ssr
+*.local
+logs
+*.log
+
+# Editor files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Local patient data imports, exports and screenshots (GDPR & privacy protection)
+exports/
+**/exports/
+temp_exports/
+imports/
+screenshots/
+temp_screenshots/
+public/*.csv
+*.csv
+!src/utils/sampleData.ts
