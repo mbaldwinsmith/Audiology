@@ -1,7 +1,7 @@
 import React from 'react';
 import { CareHomeSummary } from '../../types/audiology';
 import { COMPANY_DETAILS } from '../../utils/constants';
-import { formatDobDisplay } from '../../utils/cleaners';
+import { formatDobDisplay, isPlaceholderDob } from '../../utils/cleaners';
 
 interface CareHomeReportProps {
   summary: CareHomeSummary;
@@ -17,6 +17,10 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
   const noFurtherTreatmentPatients = summary.seenPatients.filter(
     (p) => !p.hasEarWax && !p.audiogram && p.totalAmount === 0
   );
+
+  const hasTreatmentDob = treatmentPatients.some((p) => !isPlaceholderDob(p.dob));
+  const hasClearDob = noFurtherTreatmentPatients.some((p) => !isPlaceholderDob(p.dob));
+  const hasUnseenDob = summary.unseenPatients.some((p) => !isPlaceholderDob(p.dob));
 
   return (
     <div className="a4-page p-8 font-sans text-slate-800 flex flex-col justify-between text-xs leading-relaxed">
@@ -71,7 +75,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                   <tr className="bg-brand-soft text-brand-navy font-semibold border-b border-slate-200">
                     <th className="py-1.5 px-3 w-8">#</th>
                     <th className="py-1.5 px-3">Resident Name</th>
-                    <th className="py-1.5 px-3">DOB</th>
+                    {hasTreatmentDob && <th className="py-1.5 px-3">DOB</th>}
                     <th className="py-1.5 px-3">Invoice No</th>
                     <th className="py-1.5 px-3">Services Provided</th>
                     <th className="py-1.5 px-3">Next Step / Advice</th>
@@ -92,7 +96,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                       <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                         <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
                         <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                        <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
+                        {hasTreatmentDob && <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>}
                         <td className="py-1.5 px-3 font-mono font-medium text-brand-blue">{p.invoiceNo}</td>
                         <td className="py-1.5 px-3 text-slate-700 font-medium">{servicesText}</td>
                         <td className="py-1.5 px-3 text-slate-600">
@@ -136,7 +140,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                   <tr className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
                     <th className="py-1.5 px-3 w-8">#</th>
                     <th className="py-1.5 px-3">Resident Name</th>
-                    <th className="py-1.5 px-3">DOB</th>
+                    {hasClearDob && <th className="py-1.5 px-3">DOB</th>}
                     <th className="py-1.5 px-3">Check Result</th>
                     <th className="py-1.5 px-3">Status</th>
                   </tr>
@@ -146,7 +150,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <tr key={p.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                       <td className="py-1.5 px-3 text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                      <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
+                      {hasClearDob && <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>}
                       <td className="py-1.5 px-3 text-slate-600">
                         {p.hearingTestResult || 'Routine check clear. Ear canals healthy.'}
                       </td>
@@ -178,7 +182,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                   <tr className="bg-amber-50/70 text-amber-900 font-semibold border-b border-amber-200">
                     <th className="py-1.5 px-3 w-8">#</th>
                     <th className="py-1.5 px-3">Resident Name</th>
-                    <th className="py-1.5 px-3">DOB</th>
+                    {hasUnseenDob && <th className="py-1.5 px-3">DOB</th>}
                     <th className="py-1.5 px-3">Reason Not Seen / Notes</th>
                   </tr>
                 </thead>
@@ -187,7 +191,7 @@ export const CareHomeReport: React.FC<CareHomeReportProps> = ({ summary }) => {
                     <tr key={p.id} className="bg-amber-50/20">
                       <td className="py-1.5 px-3 text-amber-700/60 font-mono">{idx + 1}</td>
                       <td className="py-1.5 px-3 font-semibold text-slate-800">{p.residentFullName}</td>
-                      <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>
+                      {hasUnseenDob && <td className="py-1.5 px-3 text-slate-600">{formatDobDisplay(p.dob)}</td>}
                       <td className="py-1.5 px-3 text-amber-950 font-medium">
                         {p.reasonNotSeen || 'Not seen during scheduled visit - reschedule requested'}
                       </td>
