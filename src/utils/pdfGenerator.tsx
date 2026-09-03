@@ -8,6 +8,7 @@ import { CareHomeReport } from '../components/print/CareHomeReport';
 import { AudiologyReport } from '../components/print/AudiologyReport';
 import { AudiologyInvoice } from '../components/print/AudiologyInvoice';
 import { generateCleanedCsv } from './csvParser';
+import { toTitleCase } from './cleaners';
 
 /**
  * Sanitizes a string for safe usage in file and folder names.
@@ -219,9 +220,10 @@ export async function exportBatchZipArchive(
 
   const zip = new JSZip();
 
-  const safeCareHome = sanitizeFileName(summary.careHome || 'CareHome');
-  const dateStr = summary.appointmentDate ? summary.appointmentDate.replace(/\//g, '-') : 'Date';
-  const rootFolderName = `${safeCareHome}_Audiology_${dateStr}`;
+  const careHomeName = toTitleCase(summary.careHome || 'Care Home')
+    .replace(/[\\/:*?"<>|]/g, '')
+    .trim() || 'Care Home';
+  const rootFolderName = careHomeName;
   const folder = zip.folder(rootFolderName) || zip;
 
   const reportsFolder = folder.folder('Reports');
@@ -235,17 +237,17 @@ export async function exportBatchZipArchive(
       total: totalDocs,
       percent: Math.round((currentDoc / totalDocs) * 100),
       status: 'Generating Care Home Summary...',
-      itemTitle: `${summary.careHome} Summary`,
+      itemTitle: `${careHomeName} Summary`,
     });
   }
 
   const summaryBlob = await renderReactNodeToPdfBlob(<CareHomeReport summary={summary} />);
-  const summaryFileName = `00_${safeCareHome}_Summary_Report_${dateStr}.pdf`;
+  const summaryFileName = `00_${sanitizeFileName(careHomeName)}_Summary_Report.pdf`;
   folder.file(summaryFileName, summaryBlob);
 
   // Bundle Portable Cleaned CSV into ZIP root
   const cleanedCsvText = generateCleanedCsv(patients, true);
-  const cleanedCsvFileName = `00_${safeCareHome}_Cleaned_Roster_${dateStr}.csv`;
+  const cleanedCsvFileName = `00_${sanitizeFileName(careHomeName)}_Cleaned_Roster.csv`;
   folder.file(cleanedCsvFileName, cleanedCsvText);
 
   // 2. Loop through seen patients
