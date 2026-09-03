@@ -11,6 +11,7 @@ import { CareHomeSummary, PatientRow, ValidationError } from './types/audiology'
 import { parseAudiologyCsv, generateCleanedCsv } from './utils/csvParser';
 import { SAMPLE_CSV_DATA } from './utils/sampleData';
 import { exportBatchZipArchive, sanitizeFileName, triggerBlobDownload } from './utils/pdfGenerator';
+import { toTitleCase } from './utils/cleaners';
 import {
   INACTIVITY_TIMEOUT_MS,
   initializePinStorage,
@@ -181,11 +182,8 @@ export function App() {
 
     const csvContent = generateCleanedCsv(patients, true);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const safeCareHome = sanitizeFileName(summary?.careHome || 'CareHome');
-    const dateStr = summary?.appointmentDate
-      ? summary.appointmentDate.replace(/\//g, '-')
-      : 'Date';
-    const filename = `${safeCareHome}_Cleaned_Roster_${dateStr}.csv`;
+    const careHomeName = toTitleCase(summary?.careHome || 'Care Home');
+    const filename = sanitizeFileName(`${careHomeName} - Resident Roster.csv`);
 
     triggerBlobDownload(blob, filename);
   }, [patients, summary]);

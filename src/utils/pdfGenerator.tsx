@@ -17,7 +17,7 @@ export function sanitizeFileName(name: string): string {
   return name
     .replace(/[\\/:*?"<>|]/g, '')
     .trim()
-    .replace(/\s+/g, '_');
+    .replace(/\s+/g, ' ');
 }
 
 /**
@@ -160,9 +160,8 @@ export async function renderReactNodeToPdfBlob(node: React.ReactElement): Promis
  * Single document export helper: Clinical Ear & Hearing Summary PDF
  */
 export async function exportPatientReportPdf(patient: PatientRow): Promise<void> {
-  const filename = sanitizeFileName(
-    `${patient.reportRef}_${patient.residentSurname}_${patient.residentFirstName}_Report.pdf`
-  );
+  const residentName = patient.residentFullName || `${patient.residentFirstName} ${patient.residentSurname}`.trim() || 'Resident';
+  const filename = sanitizeFileName(`${residentName} - Ear & Hearing Summary.pdf`);
   const blob = await renderReactNodeToPdfBlob(<AudiologyReport patient={patient} />);
   triggerBlobDownload(blob, filename);
 }
@@ -171,9 +170,8 @@ export async function exportPatientReportPdf(patient: PatientRow): Promise<void>
  * Single document export helper: Patient Itemized Invoice PDF
  */
 export async function exportPatientInvoicePdf(patient: PatientRow): Promise<void> {
-  const filename = sanitizeFileName(
-    `${patient.invoiceNo}_${patient.residentSurname}_${patient.residentFirstName}_Invoice.pdf`
-  );
+  const residentName = patient.residentFullName || `${patient.residentFirstName} ${patient.residentSurname}`.trim() || 'Resident';
+  const filename = sanitizeFileName(`${residentName} - Invoice.pdf`);
   const blob = await renderReactNodeToPdfBlob(<AudiologyInvoice patient={patient} />);
   triggerBlobDownload(blob, filename);
 }
@@ -182,10 +180,8 @@ export async function exportPatientInvoicePdf(patient: PatientRow): Promise<void
  * Single document export helper: Care Home Overview Summary Report PDF
  */
 export async function exportCareHomeReportPdf(summary: CareHomeSummary): Promise<void> {
-  const dateStr = summary.appointmentDate ? summary.appointmentDate.replace(/\//g, '-') : 'Visit';
-  const filename = sanitizeFileName(
-    `${summary.careHome}_Care_Home_Summary_Report_${dateStr}.pdf`
-  );
+  const careHomeName = toTitleCase(summary.careHome || 'Care Home');
+  const filename = sanitizeFileName(`${careHomeName} - Care Home Summary.pdf`);
   const blob = await renderReactNodeToPdfBlob(<CareHomeReport summary={summary} />);
   triggerBlobDownload(blob, filename);
 }
@@ -242,17 +238,18 @@ export async function exportBatchZipArchive(
   }
 
   const summaryBlob = await renderReactNodeToPdfBlob(<CareHomeReport summary={summary} />);
-  const summaryFileName = `00_${sanitizeFileName(careHomeName)}_Summary_Report.pdf`;
+  const summaryFileName = sanitizeFileName(`${careHomeName} - Care Home Summary.pdf`);
   folder.file(summaryFileName, summaryBlob);
 
   // Bundle Portable Cleaned CSV into ZIP root
   const cleanedCsvText = generateCleanedCsv(patients, true);
-  const cleanedCsvFileName = `00_${sanitizeFileName(careHomeName)}_Cleaned_Roster.csv`;
+  const cleanedCsvFileName = sanitizeFileName(`${careHomeName} - Resident Roster.csv`);
   folder.file(cleanedCsvFileName, cleanedCsvText);
 
   // 2. Loop through seen patients
   for (let i = 0; i < seenPatients.length; i++) {
     const patient = seenPatients[i];
+    const residentName = patient.residentFullName || `${patient.residentFirstName} ${patient.residentSurname}`.trim() || 'Resident';
 
     // Patient Clinical Report
     currentDoc++;
@@ -262,14 +259,12 @@ export async function exportBatchZipArchive(
         total: totalDocs,
         percent: Math.round((currentDoc / totalDocs) * 100),
         status: `Generating Report ${i + 1} of ${seenPatients.length}...`,
-        itemTitle: `${patient.residentFullName} (Report)`,
+        itemTitle: `${residentName} (Report)`,
       });
     }
 
     const reportBlob = await renderReactNodeToPdfBlob(<AudiologyReport patient={patient} />);
-    const reportFileName = sanitizeFileName(
-      `${patient.reportRef}_${patient.residentSurname}_${patient.residentFirstName}_Report.pdf`
-    );
+    const reportFileName = sanitizeFileName(`${residentName} - Ear & Hearing Summary.pdf`);
     if (reportsFolder) {
       reportsFolder.file(reportFileName, reportBlob);
     } else {
@@ -284,14 +279,12 @@ export async function exportBatchZipArchive(
         total: totalDocs,
         percent: Math.round((currentDoc / totalDocs) * 100),
         status: `Generating Invoice ${i + 1} of ${seenPatients.length}...`,
-        itemTitle: `${patient.residentFullName} (Invoice)`,
+        itemTitle: `${residentName} (Invoice)`,
       });
     }
 
     const invoiceBlob = await renderReactNodeToPdfBlob(<AudiologyInvoice patient={patient} />);
-    const invoiceFileName = sanitizeFileName(
-      `${patient.invoiceNo}_${patient.residentSurname}_${patient.residentFirstName}_Invoice.pdf`
-    );
+    const invoiceFileName = sanitizeFileName(`${residentName} - Invoice.pdf`);
     if (invoicesFolder) {
       invoicesFolder.file(invoiceFileName, invoiceBlob);
     } else {

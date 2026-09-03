@@ -93,15 +93,15 @@ export const BatchExportModal: React.FC<BatchExportModalProps> = ({
           </div>
           <div className="text-slate-700 flex items-center gap-1.5 pl-2">
             <Building className="w-3.5 h-3.5 text-brand-blue" />
-            <span>00_Care_Home_Summary_Report.pdf</span>
+            <span>[Care Home] - Care Home Summary.pdf</span>
           </div>
           <div className="text-slate-700 flex items-center gap-1.5 pl-2">
             <FileText className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Reports/[Ref]_[Surname]_[First]_Report.pdf</span>
+            <span>Reports/[Resident Name] - Ear &amp; Hearing Summary.pdf</span>
           </div>
           <div className="text-slate-700 flex items-center gap-1.5 pl-2">
             <Receipt className="w-3.5 h-3.5 text-amber-600" />
-            <span>Invoices/[InvNo]_[Surname]_[First]_Invoice.pdf</span>
+            <span>Invoices/[Resident Name] - Invoice.pdf</span>
           </div>
         </div>
 

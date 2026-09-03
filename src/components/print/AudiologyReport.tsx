@@ -196,7 +196,7 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
                 </span>
               </div>
               <p className="text-[11px] text-amber-950 leading-relaxed">
-                To gently soften the ear wax before removal, please put <strong>2 to 3 drops of medicinal olive oil (or Earol spray)</strong> into the affected ear(s) <strong>twice a day for 14 days</strong>. Please do not use cotton buds in the ears.
+                To gently soften the ear wax before removal, please put <strong>2 to 3 drops of medicinal olive oil (or Earol spray)</strong> into both ears <strong>twice a day for 14 days</strong>. Please do not use cotton buds in the ears.
               </p>
             </div>
           )}
