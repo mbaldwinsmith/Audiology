@@ -88,21 +88,13 @@ function generateDefaultClinicalFindings(
   screening: boolean,
   notes: string
 ) {
-  const getFindingForSide = (level: EarWaxLevel) => {
-    switch (level) {
-      case 0:
-        return 'Eardrum is clear and healthy with no wax buildup.';
-      case 1:
-        return 'Small amount of normal ear wax seen. Ear canal is clear, eardrum is visible, and no wax removal is needed.';
-      case 2:
-        return 'Moderate ear wax buildup found. Wax removal recommended after using olive oil drops.';
-      case 3:
-        return 'Heavy ear wax blocking the ear canal. Wax removal recommended after using olive oil drops.';
-    }
-  };
+  const hasWax = leftWax >= 2 || rightWax >= 2;
+  const earCheckFinding = hasWax
+    ? 'Ear wax occlusion found in ears, which is associated with hearing loss. Wax removal recommended.'
+    : 'Ear canals and eardrums checked. Canal clear and healthy, no wax removal required.';
 
-  const leftEarFinding = getFindingForSide(leftWax);
-  const rightEarFinding = getFindingForSide(rightWax);
+  const leftEarFinding = earCheckFinding;
+  const rightEarFinding = earCheckFinding;
 
   let hearingTestResult = 'Ear check and hearing test completed.';
   if (audiogram) {
@@ -114,7 +106,7 @@ function generateDefaultClinicalFindings(
   let recommendations = 'Routine annual ear and hearing check recommended.';
   let nextStep = 'All Clear';
 
-  if (leftWax >= 2 || rightWax >= 2) {
+  if (hasWax) {
     recommendations = 'Please apply 2 to 3 drops of olive oil (or Earol spray) twice a day for 14 days to soften the wax before gentle cleaning.';
     nextStep = '2-Week Olive Oil Drops / Wax Removal';
   } else if (leftWax === 1 || rightWax === 1) {
@@ -129,7 +121,7 @@ function generateDefaultClinicalFindings(
     recommendations += ` Note: ${notes}`;
   }
 
-  return { leftEarFinding, rightEarFinding, hearingTestResult, recommendations, nextStep };
+  return { leftEarFinding, rightEarFinding, earCheckFinding, hearingTestResult, recommendations, nextStep };
 }
 
 /**
@@ -289,6 +281,7 @@ export function parseAudiologyCsv(csvString: string): Promise<ParseResult> {
             paymentRef: seen && isPaid ? paymentRef : '',
             leftEarFinding: clinicalDefaults.leftEarFinding,
             rightEarFinding: clinicalDefaults.rightEarFinding,
+            earCheckFinding: clinicalDefaults.earCheckFinding,
             hearingTestResult: clinicalDefaults.hearingTestResult,
             recommendations: clinicalDefaults.recommendations,
             nextStep: clinicalDefaults.nextStep,
@@ -475,6 +468,7 @@ export function createNewPatient(input: NewPatientInput): PatientRow {
     paymentRef,
     leftEarFinding: clinicalDefaults.leftEarFinding,
     rightEarFinding: clinicalDefaults.rightEarFinding,
+    earCheckFinding: clinicalDefaults.earCheckFinding,
     hearingTestResult: clinicalDefaults.hearingTestResult,
     recommendations: clinicalDefaults.recommendations,
     nextStep: clinicalDefaults.nextStep,

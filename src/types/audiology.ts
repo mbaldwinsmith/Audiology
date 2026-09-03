@@ -65,6 +65,7 @@ export interface PatientRow {
   // Clinical customization fields (for interactive live edit)
   leftEarFinding?: string;
   rightEarFinding?: string;
+  earCheckFinding?: string;
   hearingTestResult?: string;
   recommendations?: string;
   nextStep?: string;

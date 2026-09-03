@@ -81,112 +81,40 @@ export const AudiologyReport: React.FC<AudiologyReportProps> = ({ patient }) => 
             </div>
           </div>
 
-          {/* Ear Check Findings (Left vs Right) */}
+          {/* Ear Check Findings */}
           <div className="mb-4.5">
             <div className="bg-brand-navy text-white px-3.5 py-1.5 rounded-t-md font-bold text-xs uppercase tracking-wider flex items-center justify-between">
               <span>Ear Check Results</span>
               <span className="text-[10px] font-normal text-brand-soft">Visual Check</span>
             </div>
-            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white grid grid-cols-2 gap-3.5">
-              {/* Left Ear */}
+            <div className="border border-t-0 border-slate-200 rounded-b-md p-3.5 bg-white">
               {(() => {
-                const isLeftClear = patient.leftEarWax === 0;
-                const isLeftMinor = patient.leftEarWax === 1;
-                const isLeftModerate = patient.leftEarWax === 2;
-                const cardBg = isLeftClear
-                  ? 'bg-slate-50/70 border-slate-200'
-                  : isLeftMinor
-                  ? 'bg-amber-50/50 border-amber-200'
-                  : isLeftModerate
-                  ? 'bg-orange-50/60 border-orange-200'
-                  : 'bg-rose-50/60 border-rose-200';
-                const dotBg = isLeftClear
-                  ? 'bg-emerald-500'
-                  : isLeftMinor
-                  ? 'bg-amber-500'
-                  : isLeftModerate
-                  ? 'bg-orange-500'
-                  : 'bg-rose-600';
-                const badgeClass = isLeftClear
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                  : isLeftMinor
+                const hasWax = patient.leftEarWax >= 2 || patient.rightEarWax >= 2 || patient.hasEarWax;
+                const cardBg = hasWax
+                  ? 'bg-amber-50/60 border-amber-200'
+                  : 'bg-slate-50/70 border-slate-200';
+                const dotBg = hasWax ? 'bg-amber-500' : 'bg-emerald-500';
+                const badgeClass = hasWax
                   ? 'bg-amber-100 text-amber-800 border-amber-200'
-                  : isLeftModerate
-                  ? 'bg-orange-100 text-orange-800 border-orange-200'
-                  : 'bg-rose-100 text-rose-800 border-rose-200';
-                const label = isLeftClear
-                  ? 'Canal Clear'
-                  : isLeftMinor
-                  ? 'Minor Ear Wax'
-                  : isLeftModerate
-                  ? 'Moderate Ear Wax'
-                  : 'Severe Ear Wax';
+                  : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                const badgeLabel = hasWax ? 'Ear Wax Occlusion' : 'Canals Clear';
+                const findingText = hasWax
+                  ? 'Ear wax occlusion found in ears, which is associated with hearing loss. Wax removal recommended.'
+                  : (patient.earCheckFinding || patient.leftEarFinding || 'Ear canals and eardrums checked. Canal clear and healthy, no wax removal required.');
 
                 return (
-                  <div className={`p-3 rounded-md border flex flex-col justify-between min-h-[90px] ${cardBg}`}>
-                    <div className="flex items-center justify-between mb-2">
+                  <div className={`p-3 rounded-md border flex flex-col justify-between ${cardBg}`}>
+                    <div className="flex items-center justify-between mb-1.5">
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
-                        LEFT EAR
+                        EAR EXAMINATION
                       </span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${badgeClass}`}>
-                        {label}
+                        {badgeLabel}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-700 leading-snug flex-1">
-                      {patient.leftEarFinding || 'Ear canal and eardrum checked.'}
-                    </p>
-                  </div>
-                );
-              })()}
-
-              {/* Right Ear */}
-              {(() => {
-                const isRightClear = patient.rightEarWax === 0;
-                const isRightMinor = patient.rightEarWax === 1;
-                const isRightModerate = patient.rightEarWax === 2;
-                const cardBg = isRightClear
-                  ? 'bg-slate-50/70 border-slate-200'
-                  : isRightMinor
-                  ? 'bg-amber-50/50 border-amber-200'
-                  : isRightModerate
-                  ? 'bg-orange-50/60 border-orange-200'
-                  : 'bg-rose-50/60 border-rose-200';
-                const dotBg = isRightClear
-                  ? 'bg-emerald-500'
-                  : isRightMinor
-                  ? 'bg-amber-500'
-                  : isRightModerate
-                  ? 'bg-orange-500'
-                  : 'bg-rose-600';
-                const badgeClass = isRightClear
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                  : isRightMinor
-                  ? 'bg-amber-100 text-amber-800 border-amber-200'
-                  : isRightModerate
-                  ? 'bg-orange-100 text-orange-800 border-orange-200'
-                  : 'bg-rose-100 text-rose-800 border-rose-200';
-                const label = isRightClear
-                  ? 'Canal Clear'
-                  : isRightMinor
-                  ? 'Minor Ear Wax'
-                  : isRightModerate
-                  ? 'Moderate Ear Wax'
-                  : 'Severe Ear Wax';
-
-                return (
-                  <div className={`p-3 rounded-md border flex flex-col justify-between min-h-[90px] ${cardBg}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                        <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
-                        RIGHT EAR
-                      </span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${badgeClass}`}>
-                        {label}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-700 leading-snug flex-1">
-                      {patient.rightEarFinding || 'Ear canal and eardrum checked.'}
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      {findingText}
                     </p>
                   </div>
                 );

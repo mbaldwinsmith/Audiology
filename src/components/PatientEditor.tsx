@@ -62,6 +62,13 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
   const handleEarWaxChange = (side: 'leftEarWax' | 'rightEarWax', level: EarWaxLevel) => {
     const updated = { ...patient, [side]: level };
     updated.hasEarWax = updated.leftEarWax >= 2 || updated.rightEarWax >= 2;
+    if (updated.hasEarWax) {
+      updated.earCheckFinding = 'Ear wax occlusion found in ears, which is associated with hearing loss. Wax removal recommended.';
+    } else {
+      updated.earCheckFinding = 'Ear canals and eardrums checked. Canal clear and healthy, no wax removal required.';
+    }
+    updated.leftEarFinding = updated.earCheckFinding;
+    updated.rightEarFinding = updated.earCheckFinding;
     updated.lineItems = calculateLineItems(
       updated.screening,
       updated.audiogram,
@@ -458,24 +465,21 @@ export const PatientEditor: React.FC<PatientEditorProps> = ({
 
       {/* Clinical Notes Inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        {/* Left Ear Finding */}
-        <div>
-          <label className="font-semibold text-slate-700 block mb-1">Left Ear Notes</label>
+        {/* Ear Check Finding */}
+        <div className="sm:col-span-2">
+          <label className="font-semibold text-slate-700 block mb-1">Ear Check Findings / Notes</label>
           <textarea
             rows={2}
-            value={patient.leftEarFinding || ''}
-            onChange={(e) => handleFieldChange('leftEarFinding', e.target.value)}
-            className="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-brand-blue outline-none"
-          />
-        </div>
-
-        {/* Right Ear Finding */}
-        <div>
-          <label className="font-semibold text-slate-700 block mb-1">Right Ear Notes</label>
-          <textarea
-            rows={2}
-            value={patient.rightEarFinding || ''}
-            onChange={(e) => handleFieldChange('rightEarFinding', e.target.value)}
+            value={patient.earCheckFinding || patient.leftEarFinding || ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              onUpdatePatient({
+                ...patient,
+                earCheckFinding: val,
+                leftEarFinding: val,
+                rightEarFinding: val,
+              });
+            }}
             className="w-full border border-slate-300 rounded p-2 text-xs focus:ring-1 focus:ring-brand-blue outline-none"
           />
         </div>
